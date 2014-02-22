@@ -3,6 +3,9 @@ SENG 513 Team Project
 
 Changelog:
 
+v.0.02
+main.js	session logic added
+		basic image serving added. TODO: recieve path from database
 v 0.01
 main.js contains routes outlined in project specification
 
