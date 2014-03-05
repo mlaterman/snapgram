@@ -3,7 +3,17 @@ SENG 513 Team Project
 
 Changelog:
 
-v.0.02
+v 0.05
+database file export names changed
+started integrating db functionality with main.js
+
+v 0.04
+Jade basis added
+
+v 0.03
+database file added
+
+v 0.02
 main.js	session logic added
 		basic image serving added. TODO: recieve path from database
 v 0.01

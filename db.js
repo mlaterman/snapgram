@@ -343,11 +343,11 @@ function getFeed(userID, callback){
 }
 //function _end_connection(){
 //};
-module.exports.createDb = createDb;
+module.exports.createDB = createDb;
 module.exports.usr_is_exist = usr_is_exist;
 module.exports.addUser = addUser;
-module.exports.deleteDb = deleteDb;
-module.exports.closeDb = closeDb;
+module.exports.deleteDB = deleteDb;
+module.exports.closeDB = closeDb;
 module.exports.getPassword = getPassword;
 module.exports.addPhoto = addPhoto;
 module.exports.addPath = addPath;
