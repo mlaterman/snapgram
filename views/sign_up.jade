@@ -1,0 +1,35 @@
+extends layout
+
+block title
+
+	title Register
+
+block content
+
+	div.container
+		div.row
+			div.span
+			br
+			br
+			form.form_style(action = '/users/create', method = 'post')
+				fieldset
+					legend Register!
+					div.control_group
+						label.control_label(for = 'new_Fullname')
+						div.controls
+							input#new_Fullname.input_style(name = 'fullname', type = 'text', placeholder = 'input fullname', required)
+					div.control_group
+						label.control_label(for = 'new_Username')
+						div.controls
+							input#new_Username.input_style(name = 'username', type = 'text', placeholder = 'input username', required)
+					div.control_group
+						label.control_label(for = 'new_Password')
+						div.controls
+							input#new_Password.input_style(name = 'password', type = 'password', placeholder = 'input password', required)
+					div.control.group
+						div.controls
+							button.button_style(type = 'submit', value = 'Sign up') Sign up
+					div.control.group
+						div.controls
+							button.button_style(type = 'reset') Reset
+						

@@ -1,0 +1,53 @@
+h1 {	text-indent: 100px;
+		letter-spacing: 1px;
+		color: purple;
+		font-family: courier;
+		margin-top: 30px;
+}
+
+body {background-color:#b0c4de;}
+
+div.img
+{
+	width: 200px;
+	height: 200px;
+	margin: 50px 50px 50px 100px;
+	padding: 10px;
+	border-size: 5px;
+	border-align: center;
+	border-style: inset;
+	border-color: #98bf21;
+	float:left;
+	align: center;
+	text-align: center;
+	position: relative;
+	/* display:inline-block; */
+}
+
+div.img img
+{
+	position: absolute;
+	bottom: 50px;
+	left: 35;
+  	width: 150px;
+/* 	margin: 50px 50px 50px 100px;
+	padding: 10px;
+	border: 5px inset #98bf21; */
+}
+
+div.desc
+{
+  /* align:center; */
+  align: center;
+  position: absolute;
+  bottom: 15px;
+  left: 35px;
+  border-size: 5px;
+  border-align: center;
+  border-style: inset;
+  border-color: #EEE685;
+  font-size: 14px;
+  color: #6B4226;
+  /* text-align: center; */
+  width:145px;
+}

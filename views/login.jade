@@ -1,0 +1,36 @@
+extends layout
+
+block title
+
+  title #{title}
+
+block content
+
+  div.container
+    div.row
+      div.span
+        br 
+        br 
+        form.form_style(action = '/sessions/create', method = 'post')
+          fieldset
+            legend Log in!
+            if (message != '')
+              div.alert.alert-error
+                p !{message}
+            div.control_group
+              label.control_label(for = 'input_UserName') Your Name
+              div.controls
+                input#input_UserName.input_style(name = 'username', type = 'text', placeholder = 'input username', required)
+            div.control_group
+              label.control_label(for = 'input_Password') Password
+              div.controls
+                input#input_Password.input_style(name = 'password', type = 'password', placeholder = 'input password', required)
+            div.control_group
+              div.controls
+                button.button_style(type = 'submit') Sign in      
+        p You are new here, do you need to 
+          a(href='signup') <strong>sign up</strong>
+          |  for a #{title} account?
+        br
+        p.small
+          em Hint: try "Ironman" and "123456"
