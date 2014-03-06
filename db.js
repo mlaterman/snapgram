@@ -16,8 +16,8 @@ var snapgram_config = {
     password: db_password,
     database:'snapgram'
 };
-//function to create a database 'snapgram' with four tables: users, photos, followship, stream;
- 
+
+//function to create a database 'snapgram' with four tables: users, photos, followship, stream; 
 var createDb = function () {
     var connection = mysql.createConnection(db_config);
     // create a database called snapgram to store infos.
@@ -89,8 +89,6 @@ var deleteDb = function(){
    }); 
     connection.end();
 }
-
-
 //hand a connection lost. Recreate a connection
 function handleDisconnect(){
     var connection = mysql.createConnection(snapgram_config);
@@ -459,10 +457,10 @@ function getMyFeed(userID, callback){
 }
 //function _end_connection(){
 //};
-module.exports.createDb = createDb;
-module.exports.usr_is_exist = usr_is_exist;
+module.exports.createDB = createDb;
+module.exports.userExists = usr_is_exist;
 module.exports.addUser = addUser;
-module.exports.deleteDb = deleteDb;
+module.exports.deleteDB = deleteDb;
 module.exports.getPassword = getPassword;
 module.exports.addPhoto = addPhoto;
 module.exports.addPath = addPath;

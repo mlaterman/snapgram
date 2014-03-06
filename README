@@ -3,6 +3,44 @@ SENG 513 Team Project
 
 Changelog:
 
+v 0.15
+Added querystring support for feed and user pages
+TODO:
+	bulk uploads
+	sharing
+	
+	DB: login function
+	DB: getFeed and getMyFeed need to return more attributes
+	DB: password hashing
+	
+	JADE: new users form should have room for an error message variable called error
+	JADE: follow and unfollow buttons on other's pages
+	JADE: feedpage should have a variable called images to create elements from
+	JADE: separate upload page (decouple from /feed)
+	JADE: upload file tag should be named image
+
+v 0.11
+Changed error responses to use jad templates
+added 404 and 400 templates to views
+
+v 0.10
+more database functionality
+	viewing user feeds, /feed (need verification)
+	following/unfollowing
+db.js some export names have changed to follow convention
+TODO:
+	Allow for query string to specify page views
+	bulk requirements
+	sharing
+	
+	DB: password hashing
+	DB: login function still needed
+	DB: verify usage of getFeed and getMyFeed in main.js
+	DB: verify separation of paths from returned rows
+	
+	JADE: recieve image paths and create requests
+	JADE: change name of file upload field to image
+
 v 0.06
 jade integration started
 TODO:
