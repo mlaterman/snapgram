@@ -195,20 +195,20 @@ function getPassword(userName, callback){
     });
     connection.end();
 }
-//Check the provided password whether is belong to a user with id as userID
-//callback(err, match) If password and userId match, math is 1, otherwise, 0; When error happend, match is null;
+//Check the provided password whether is belong to the user userName 
+//callback(err, uid) If password and userName match, uid is the user's ID, otherwise, 0; When error happend, match is null;
 //@param userID: a unsigned int
 //@password: a string
-function checkPassword(userID, password, callback){
+function checkPassword(userName, password, callback){
     var connection = mysql.createConnection(snapgram_config);
-    var sql = 'SELECT passwd FROM users WHERE uid = ?';
-    connection.query(sql, [userID], function(err, rows){
+    var sql = 'SELECT passwd,uid FROM users WHERE usrName = ?';
+    connection.query(sql, [userName], function(err, rows){
 	if(err){
 	    callback(err, null);
 	}
 	else{
 	    if(mysql.escape(rows[0].passwd) == mysql.escape(password))
-		callback(null, 1);
+		callback(null, rows[0].uid);
 	    else
 		callback(null, 0);
 	}
