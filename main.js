@@ -4,6 +4,7 @@ var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
 var db = require('./db');
+
 var app = express();
 
 app.use(express.cookieParser());
@@ -11,6 +12,7 @@ app.use(express.session({
 	key : 'sid',
 	secret : 's3cr3t'
 })); //use session or cookieSession?
+app.engine('jade', require('jade').__express);
 /*
  * Session variables:
  * valid - end user is logged in
@@ -26,12 +28,11 @@ app.use(express.session({
  //TODO: complete this
 app.get('/users/new', function(req, res) { //return user signup form
 	if(req.session.lError == null) {
-		//default response here
+		res.render('sign_up', {});
 	} else {
-		//there was an error in creating an account
+		res.render('sign_up', {error : "User Already Exists"});//TODO: ensure message is applied
 	}
 });
-//TODO: ensure jade follows name for username, password, fullname
 //TODO: password hashing at DB
 app.post('/users/create', function(req, res) { //create user from body info, logs in and redirects to feed
 	var uname = req.body.username;
@@ -70,7 +71,8 @@ app.get('/users/:id/follow', function(req, res) {
 			if(err) { //TODO: check to see if DB failed or if user was already being followed
 				
 			} else { // success
-					//TODO: check what the response should be
+				res.redirect('/users/'+id);
+				res.send();
 			}
 		});
 	}
@@ -87,7 +89,8 @@ app.get('/users/:id/unfollow', function(req, res) {
 				if(err) {
 					//TODO: same check as follow
 				} else {
-					//TODO: check to see proper response
+					res.redirect('/users/'+id);
+					res.send();
 				}
 		});
 	}
@@ -96,22 +99,23 @@ app.get('/users/:id/unfollow', function(req, res) {
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
 	
-	db.getFeed(id, function(err, rows) {
+	db.getFeed(id, function(err, rows) {//TODO: change Function
 		if(err) {
 			//check to see if id exists
 				//return 500 if it does
 				//return 404 if not
 		} else {
 			//create feed
+			res.render('feed', {});//?
 		}
 	});
 });
-//TODO: complete this
+//TODO: error message ok?
 app.get('/sessions/new', function(req, res) { //return login form
 	if(req.session.lError == null) {
-		//default login form
+		res.render('login', {});//default login form
 	} else {
-		//loginform with error message here
+		res.render('login', {error : "Login Failed"});
 	}
 });
 //TODO: complete this
@@ -133,13 +137,13 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 	}
 	res.send();
 });
-//TODO: complete this
+
 app.get('/photos/new', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
 	} else {
-		//serve image upload form
+		res.render('upload', {});
 	}
 });
 //TODO:  ensure jade image field is called image
@@ -210,7 +214,12 @@ app.get('/photos/:id.:ext', function(req, res) {
 		if(err) {
 			respond404('Photo not found', res);
 		} else {
-			res.writeHead(200, {
+			res.sendFile(path, function(ferr) {
+					if(ferr) {
+						respond500('File Failure', res);
+					}
+			});
+			/*res.writeHead(200, {
 				'Content-Type' : 'image/'+ext
 			});
 			gm(path).stream(function (err, stdout, stderr) {
@@ -219,7 +228,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 				} else {
 					stdout.pipe(res);
 				}
-			});
+			});*/
 		}
 	});
 });
@@ -234,7 +243,7 @@ app.get('/feed', function(req, res) {
 				respond500('Error Reading Feed', res);
 			} else {
 				//TODO: what are in rows?
-				//make user feed as well as stream
+				res.render('feed', {});
 			}
 		});
 	}
@@ -257,6 +266,18 @@ app.post('/bulk/streams', function(req, res) {
 });
 
 /*
+ * Register other requests
+ * eg: css, scripts, ...
+ */
+app.get('/stylesheets/style.css', function(req, res){
+	res.sendFile('./stylesheets/style.css');
+});
+
+app.get('/stylesheets/image.css', function(req, res){
+	res.sendFile('./stylesheets/image.css');
+});
+
+/*
  * Homepage catch
  */
 app.get('/', function(req, res) {
@@ -270,11 +291,6 @@ app.get('/', function(req, res) {
 app.get('*', function(req, res) { //unknown path
 	respond404('Unknown Path', res);
 });
-
-/*
- * Register other requests
- * eg: css, scripts, ...
- */
 
 /*
  * Helper Functions Below
