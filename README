@@ -3,6 +3,24 @@ SENG 513 Team Project
 
 Changelog:
 
+v 0.10
+more database functionality
+	viewing user feeds, /feed (need verification)
+	following/unfollowing
+db.js some export names have changed to follow convention
+TODO:
+	Allow for query string to specify page views
+	bulk requirements
+	sharing
+	
+	DB: password hashing
+	DB: login function still needed
+	DB: verify usage of getFeed and getMyFeed in main.js
+	DB: verify separation of paths from returned rows
+	
+	JADE: recieve image paths and create requests
+	JADE: change name of file upload field to image
+
 v 0.06
 jade integration started
 TODO:

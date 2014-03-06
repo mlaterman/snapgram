@@ -25,7 +25,7 @@ app.engine('jade', require('jade').__express);
 /*
  * Requests needed for basic functionality
  */
- //TODO: complete this
+//TODO: complete this
 app.get('/users/new', function(req, res) { //return user signup form
 	if(req.session.lError == null) {
 		res.render('sign_up', {});
@@ -59,7 +59,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 		}
 	});
 });
-//TODO: complete this
+
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
 	
@@ -68,8 +68,8 @@ app.get('/users/:id/follow', function(req, res) {
 		res.send();
 	} else {
 		db.follow(req.session.id, id, function(err) {
-			if(err) { //TODO: check to see if DB failed or if user was already being followed
-				
+			if(err) { 
+				respond500('Failed to follow user id: '+id, res);//assume DB failure
 			} else { // success
 				res.redirect('/users/'+id);
 				res.send();
@@ -77,7 +77,7 @@ app.get('/users/:id/follow', function(req, res) {
 		});
 	}
 });
-//TODO: complete this
+
 app.get('/users/:id/unfollow', function(req, res) {
 	var id = req.params.id;
 	
@@ -87,7 +87,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 	} else {
 		db.unFollow(req.session.id, id, function(err) {
 				if(err) {
-					//TODO: same check as follow
+					respond500('Failed to unfollow user id: '+id, res);
 				} else {
 					res.redirect('/users/'+id);
 					res.send();
@@ -98,22 +98,30 @@ app.get('/users/:id/unfollow', function(req, res) {
 //TODO: complete this
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
-	
-	db.getFeed(id, function(err, rows) {//TODO: change Function
+	db.checkUserID(id, function(err, val) {
 		if(err) {
-			//check to see if id exists
-				//return 500 if it does
-				//return 404 if not
+			respond500('Database Failure', res);
+		} else if(!val) {
+			respond404('User id: '+id+' not found', res);
 		} else {
-			//create feed
-			res.render('feed', {});//?
+			db.getMyFeed(id, function(err, rows) {//TODO: correct function?
+				if(err) {
+					respond500('Database Failure', res);
+				} else {
+					var photos = new Array();
+					rows.forEach(function (row) {
+						photos.push(row.path);//TODO: check this
+					});
+					res.render('feed', { : photos});//TODO: name?
+				}
+			});
 		}
 	});
 });
-//TODO: error message ok?
+
 app.get('/sessions/new', function(req, res) { //return login form
 	if(req.session.lError == null) {
-		res.render('login', {});//default login form
+		res.render('login', {});
 	} else {
 		res.render('login', {error : "Login Failed"});
 	}
@@ -160,7 +168,7 @@ app.post('/photos/create', function(req, res) {
 				respond500('Database Error Uploading Photo', res);
 			} else {
 				var ext = (file.name).match(/\.[a-zA-Z]{1,4}$/);
-				if(ext == null) { //no extension?
+				if(ext == null) { //no extension
 					respond400('No extension found', res);
 				} else {
 					fs.writeFile(pDir+pid+ext[0], file, function(fserr) {
@@ -238,12 +246,15 @@ app.get('/feed', function(req, res) {
 		res.redirect('/sessions/new');
 		res.send();
 	} else {
-		db.getFeed(req.session.id, function(err, rows) {
+		db.getFeed(req.session.id, function(err, rows) {//TODO: correct function?
 			if (err) {
 				respond500('Error Reading Feed', res);
 			} else {
-				//TODO: what are in rows?
-				res.render('feed', {});
+				var photos = new Array();
+				rows.forEach(function(row) {
+					photos.push(row.path);TODO://check this
+				});
+				res.render('feed', { : photos});
 			}
 		});
 	}
