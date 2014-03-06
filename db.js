@@ -59,8 +59,8 @@ var createDb = function () {
     // create a table called 'stream' to add a photo uploaed by a person to all his followers
     var stream_fld = "( sid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key, " +
 		      " uid INT UNSIGNED, pid INT UNSIGNED, " +
-		      " FOREIGN KEY (uid) REFERENCES users (uid) ON UPDATE CASCADE ON DELETE CASCADE, " +
-		      " FOREIGN KEY (pid) REFERENCES photos (pid) ON UPDATE CASCADE ON DELETE CASCADE )";
+		      " FOREIGN KEY (uid) REFERENCES users (uid) , " +
+		      " FOREIGN KEY (pid) REFERENCES photos (pid) )";
     var crt_strm_tbl = 'CREATE TABLE IF NOT EXISTS stream ' + stream_fld;
     connection.query(crt_strm_tbl, function(err, results){
 	if (err) {
@@ -157,7 +157,7 @@ function addUser(username, full_name, password, ts, callback){
     });
 }
 //Taking a user name as parameter and return its corresponding password to callback function
-// the callback function: callback(err, passwd)
+// the callback function: callback(err, passwd) passwd is 0, if no such userName
 function getPassword(userName, callback){
     var sql = 'SELECT passwd FROM users WHERE usrname =? ';
     connection.query(sql,[userName],function (err, rows){
@@ -167,7 +167,28 @@ function getPassword(userName, callback){
 	else{
 	    //console.log('userName is', userName);
 	    //console.log(rows);
-	    callback(null, rows[0].passwd);
+	    if(!isEmpty(rows))
+		callback(null, rows[0].passwd);
+	    else
+		callback(null, 0);
+	}
+    });
+}
+//Check the provided password whether is belong to a user with id as userID
+//callback(err, match) If password and userId match, math is 1, otherwise, 0; When error happend, match is null;
+//@param userID: a unsigned int
+//@password: a string
+function checkPassword(userID, password, callback){
+    var sql = 'SELECT passwd FROM users WHERE uid = ?';
+    connection.query(sql, [userID], function(err, rows){
+	if(err){
+	    callback(err, null);
+	}
+	else{
+	    if(mysql.escape(rows[0].passwd) == mysql.escape(password))
+		callback(null, 1);
+	    else
+		callback(null, 0);
 	}
     });
 }
@@ -183,20 +204,28 @@ function addPhoto(userID,ts,fname, callback){
 	    callback(err,null);
 	}
 	else{
-	    callback(null,rows.insertId);
-	    _getFollower(userID, function(err,followees){
+	    //insert the photo to its own strem 
+	    addToStream(userID, rows.insertId, function(err){
+		if(err)
+		    callback(err,null);
+	    });
+	    //insert the photo to its followers' stream
+	    _getFollower(userID, function(err,followers){
 		if(err)
 		    callback(err,null);
 		else{
-		    var i =0;
-		    while(i<followees.length){
-			addToStream(followees[i], rows.insertId, function(err){
-			    if(err)
+		    console.log("your followers is ", followers);
+		    console.log(followers.length);
+		    for (var fid in followers){
+			console.log("in the for-loop", followers[i]);
+			addToStream(fid, rows.insertId, function(err){
+			    if(err){
 				callback(err,null);
-			    else
-				i=i+1;
+				console.log(err);
+			    }
 			});
 		    }
+		    callback(null,rows.insertId);
 		}
 	    });
 	}
@@ -343,14 +372,15 @@ function getFeed(userID, callback){
 }
 //function _end_connection(){
 //};
-module.exports.createDB = createDb;
+module.exports.createDb = createDb;
 module.exports.usr_is_exist = usr_is_exist;
 module.exports.addUser = addUser;
-module.exports.deleteDB = deleteDb;
-module.exports.closeDB = closeDb;
+module.exports.deleteDb = deleteDb;
+module.exports.closeDb = closeDb;
 module.exports.getPassword = getPassword;
 module.exports.addPhoto = addPhoto;
 module.exports.addPath = addPath;
 module.exports.getPath = getPath;
 module.exports.follow = follow;
 module.exports.unFollow = unFollow;
+module.exports.checkPassword = checkPassword;
