@@ -158,6 +158,23 @@ function addUser(username, full_name, password, ts, callback){
     });
     connection.end();
 }
+//check a userID exist or not; If exist, the data in callback function is true, otherwise, false
+function checkUserID(userID, callback){
+    var connection = mysql.createConnection(snapgram_config);
+
+    var sql = 'SELECT * FROM users WHERE uid = ?';
+    connection.query(sql, [userID], function (err, rows){
+	if(err)
+	    callback(err, null);
+	else{
+	    if(!_isEmpty(rows[0]))
+		callback(null,true);
+	    else
+		callback(null, false);
+	}
+    });
+    connection.end();
+}
 //Taking a user name as parameter and return its corresponding password to callback function
 // the callback function: callback(err, passwd) passwd is 0, if no such userName
 function getPassword(userName, callback){
@@ -343,16 +360,26 @@ function follow(followerID, followeeID, callback){
     
     connection.end();
 }
+//if unFollow successfully, the data of callback(err,data) is true;if they have no followship before, the data will be false;
 function unFollow(followerID, followeeID, callback){
     var connection = mysql.createConnection(snapgram_config);
-    var sql = 'DELETE FROM followship WHERE flwr_id = ? AND flwe_id =? ';
-    connection.query(sql, [followerID, followeeID], function(err, results){
-	if(err){
-	    callback(err);
-	}
-	else
-	    callback(null);
-    });
+    var sql = 'SELECT * FROM followship WHERE flwr_id = ? AND flwd_id = ? ';
+    connection.query(sql, [followerID, followeeID], function (err, rows){
+	if(err)
+	    callgack(err,null)
+	else if(_isEmpty(rows))
+		callback(null,false);
+	    else{
+		var sql = 'DELETE FROM followship WHERE flwr_id = ? AND flwe_id =? ';
+		connection.query(sql, [followerID, followeeID], function(err, results){
+		    if(err){
+			callback(err,null);
+		    }
+		    else
+			callback(null,true);
+		});
+	    }
+    }
 
     connection.end();
 }
@@ -446,3 +473,4 @@ module.exports.checkPassword = checkPassword;
 module.exports.deletePhoto = deletePhoto;
 module.exports.getFeed = getFeed;
 module.exports.getMyFeed = getMyFeed;
+module.exports.checkUserID = checkUserID;
