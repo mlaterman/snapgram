@@ -39,7 +39,7 @@ var createDb = function () {
 		    " timeStamp DATETIME, " +
 		    " name VARCHAR(30), " +
 		    " path VARCHAR(40), " +
-		    " FOREIGN KEY (uid) REFERENCES users (uid) ON UPDATE CASCADE ON DELETE CASCADE)";
+		    " FOREIGN KEY (uid) REFERENCES users (uid) )" 
 
     var crt_photo_tbl = 'CREATE TABLE IF NOT EXISTS photos ' + photo_fld;
     connection.query(crt_photo_tbl, function (err, results){
@@ -50,7 +50,7 @@ var createDb = function () {
     var flw_fld = "( fid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key, " +
 		   " flwr_id INT UNSIGNED, flwe_id INT UNSIGNED, " +
 		   " FOREIGN KEY (flwr_id) REFERENCES users (uid), " +
-		   " FOREIGN KEY (flwe_id) REFERENCES users (uid) ON UPDATE CASCADE ON DELETE CASCADE)";
+		   " FOREIGN KEY (flwe_id) REFERENCES users (uid) )";
 
     var crt_flw_tbl = 'CREATE TABLE IF NOT EXISTS followship ' + flw_fld;
     connection.query(crt_flw_tbl, function (err, results){
@@ -167,7 +167,7 @@ function getPassword(userName, callback){
 	else{
 	    //console.log('userName is', userName);
 	    //console.log(rows);
-	    if(!isEmpty(rows))
+	    if(!_isEmpty(rows))
 		callback(null, rows[0].passwd);
 	    else
 		callback(null, 0);
@@ -217,11 +217,9 @@ function addPhoto(userID,ts,fname, callback){
 		    console.log("your followers is ", followers);
 		    console.log(followers.length);
 		    for (var fid in followers){
-			console.log("in the for-loop", followers[i]);
-			addToStream(fid, rows.insertId, function(err){
+			addToStream(followers[fid], rows.insertId, function(err){
 			    if(err){
 				callback(err,null);
-				console.log(err);
 			    }
 			});
 		    }
@@ -242,31 +240,45 @@ function addPath(pid, path, callback){
 	callback(null, 1);
     })
 }
-//delete a row with photo id as the input one. Return 1, if succeeds, otherwise, 0;
+//delete a row with photo id as the input one. callback(err,data), if succeed in deleting, data is 1, otherwise, data is null;
 function deletePhoto(userID,pid, callback){
-    var sql = 'DELETE FROM photos WHERE pid = ?';
-    connection.query(sql,[pid], function(err, resutls){
-	if(err){
-	    callback(err,0);
-	}
+    _deleteFromStream(pid,function(err){
+	if(err)
+	    throw err;
 	else{
-	   _getFollower(userID, function(err, followees){
-	       if(err)
-		callback(err, 0);
-	       else{
-		   var i =0;
-		   while(i < followees.length){
-		    deleteFromStream(followees[i],pid, function(err){
-			if(err)
-			    callback(err, null);
-			else
-			    i=i+1;
-		    });
-		   }
-	       }
-	   });
+	    var sql = 'DELETE FROM photos WHERE pid = ?';
+		connection.query(sql,[pid], function(err, resutls){
+		    if(err){
+			console.log("before error");
+			console.log(err);
+			callback(err,null);
+		    }
+		    else{/*
+			console.log("photo id is ", pid);
+			deleteFromStream(userId, pid, function (err){
+			    if (err)
+				throw err;
+			    else callback(null,1);
+			});
+		       _getFollower(userID, function(err, followees){
+			   if(err)
+			       callback(err, null);
+			   else{
+			       for ( var fid in followees){
+				   deleteFromStream(followees[fid],pid, function(err){
+					if(err)
+					    callback(err, null);
+				});
+			       }
+			   }
+		       });*/
+			     callback(null, 1);
+			    }
+		});
+
 	}
     });
+
 }
 //get the storage path of a photo with ID as pid. Return PATAH if succeeds. otherwise, throw an error. 
 function getPath(pid, callback){
@@ -330,9 +342,9 @@ function addToStream(userID,photoID, callback){
 	    callback(null);
     });
 }
-function deleteFromStream(userID, photoID, callback){
-    var sql = 'DELETE FROM stream WHERE uid = ? AND pid = ?';
-    connection.query(sql, [userID, photoID], function (err, results){
+function _deleteFromStream(photoID, callback){
+    var sql = 'DELETE FROM stream WHERE pid = ?';
+    connection.query(sql, [photoID], function (err, results){
 	if(err){
 	    callback(err);
 	}
@@ -357,17 +369,26 @@ function _getFollower(followeeID, callback){
 //return a user's feed   callback(err, photos)  photos is an object consisting of photos that should appear on the user's acnt
 //Object photos has three field, (pid, path, name)
 function getFeed(userID, callback){
-    var sql = 'SELECT pid, path, name FROM stream where uid = ? ORDER BY pid DESC';
+    var sql = 'SELECT photos.pid, photos.path, photos.name FROM photos, stream WHERE ' +
+	' photos.pid = stream.pid and stream.uid =? ORDER BY photos.pid DESC';
     connection.query(sql, [userID], function (err, rows){
 	if(err)
 	    callback(err, null);
 	else{
-	    /*var photos = new Array();
-	    for(i=0;i<rows.length;++i)
-		callback(err, photos);
-	    photos[i]=rows[i].pid;*/
 	    callback(null, rows);
 	}
+    });
+}
+//return information of photos uploaded by a user;
+//input: user id
+//output: a list of objects, each object has three fields (pid, name, path);
+function getMyFeed(userID, callback){
+    var sql = 'SELECT pid, name, path FROM photos where uid = ? ORDER BY pid DESC';
+    connection.query(sql, [userID], function (err, rows){
+	if(err)
+	    callback(err, null);
+	else
+	    callback(null, rows);
     });
 }
 //function _end_connection(){
@@ -384,3 +405,6 @@ module.exports.getPath = getPath;
 module.exports.follow = follow;
 module.exports.unFollow = unFollow;
 module.exports.checkPassword = checkPassword;
+module.exports.deletePhoto = deletePhoto;
+module.exports.getFeed = getFeed;
+module.exports.getMyFeed = getMyFeed;
