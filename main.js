@@ -25,15 +25,15 @@ app.engine('jade', require('jade').__express);
 /*
  * Requests needed for basic functionality
  */
-//TODO: complete this
+//TODO: jade - create error message field
 app.get('/users/new', function(req, res) { //return user signup form
 	if(req.session.lError == null) {
 		res.render('sign_up', {});
 	} else {
-		res.render('sign_up', {error : "User Already Exists"});//TODO: ensure message is applied
+		res.render('sign_up', {error : "User Already Exists"});
 	}
 });
-//TODO: password hashing at DB
+//TODO: db - password hashing
 app.post('/users/create', function(req, res) { //create user from body info, logs in and redirects to feed
 	var uname = req.body.username;
 	var pass = req.body.password;
@@ -59,7 +59,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 		}
 	});
 });
-
+//TODO: jade - follow/unfollow buttons
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
 	
@@ -95,7 +95,8 @@ app.get('/users/:id/unfollow', function(req, res) {
 		});
 	}
 });
-//TODO: complete this
+//TODO: db - getMyFeed needs to return more attributes
+//		jade - varaible name should be set to images
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
 	db.checkUserID(id, function(err, val) {
@@ -104,15 +105,12 @@ app.get('/users/:id', function(req, res) {
 		} else if(!val) {
 			respond404('User id: '+id+' not found', res);
 		} else {
-			db.getMyFeed(id, function(err, rows) {//TODO: correct function?
+			db.getMyFeed(id, function(err, rows) {
 				if(err) {
 					respond500('Database Failure', res);
 				} else {
-					var photos = new Array();
-					rows.forEach(function (row) {
-						photos.push(row.path);//TODO: check this
-					});
-					res.render('feed', { : photos});//TODO: name?
+					var photos = photoQuery(req.query.page, rows);
+					res.render('feed', {images : photos});
 				}
 			});
 		}
@@ -126,7 +124,7 @@ app.get('/sessions/new', function(req, res) { //return login form
 		res.render('login', {error : "Login Failed"});
 	}
 });
-//TODO: complete this
+//TODO: db - login function needed
 app.post('/sessions/create', function(req, res) { //logs user in, redirects to /feed, if unsucessful, redirect to /sessions/new with error
 	var uname = req.body.username;
 	var pass = req.body.password;
@@ -145,7 +143,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 	}
 	res.send();
 });
-
+//TODO: jade - separate upload page
 app.get('/photos/new', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
@@ -154,7 +152,7 @@ app.get('/photos/new', function(req, res) {
 		res.render('upload', {});
 	}
 });
-//TODO:  ensure jade image field is called image
+//TODO: jade - ensure image field is called image
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
@@ -240,21 +238,19 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-//TODO: Complete this
+//TODO: db - getFeed needs to return more attributes
+//		jade varaible name should be set to images
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
 		res.send();
 	} else {
-		db.getFeed(req.session.id, function(err, rows) {//TODO: correct function?
+		db.getFeed(req.session.id, function(err, rows) {
 			if (err) {
 				respond500('Error Reading Feed', res);
 			} else {
-				var photos = new Array();
-				rows.forEach(function(row) {
-					photos.push(row.path);TODO://check this
-				});
-				res.render('feed', { : photos});
+				var photos = photoQuery(req.query.page, rows);
+				res.render('feed', {images : photos});
 			}
 		});
 	}
@@ -292,10 +288,11 @@ app.get('/stylesheets/image.css', function(req, res){
  * Homepage catch
  */
 app.get('/', function(req, res) {
-	if(req.session.valid == null)
+	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
-	else
+	} else {
 		res.redirect('/feed');
+	}
 	res.send();
 });
 
@@ -313,7 +310,6 @@ function respond400(message, res) {
 		error : message
 	});
 }
- 
 function respond404(message, res) {
 	util.log(message);
 	res.render(404, {
@@ -321,7 +317,6 @@ function respond404(message, res) {
 			error : message
 	});
 }
-
 function respond500(message, res) {
 	util.log(message);
 	res.render(500, {
@@ -329,7 +324,36 @@ function respond500(message, res) {
 		error : message
 	});
 }
-
+/*
+ * Method for hadnleing querystrings for feeds
+ * Returns upto 30 photos. If the passed page value is null, less than 2
+ * or not a number, the first 30 are chosen. If the starting page results
+ * ina value larger than the full collection a recursive call is made
+ * with page-1.
+ * @page the requested page to view
+ * @rows the full collection of photos
+ * @return a slice of the collection
+ */ 
+function photoQuery(page, rows) {
+	var photos;
+	if (page == null || page < 2 || isNaN(page)) {
+		return _photosQueryDefault(rows)
+	} else {
+		var start = (page-1)*30;
+		if(start > rows.length) {
+			return photoQuery(page-1, rows);
+		} else {
+			var end = start+30 < rows.length ? start+30 : rows.length;
+			return rows.slice(start, end);
+		}
+	}	
+}
+//By default get upto the first 30 objects
+function _photosQueryDefault(rows) {
+	var end = 30 < rows.length ? 30 : rows.length;
+	return rows.slice(0, end);
+}
+//Not used
 function logOut(req, res) {
 		req.session.destroy(function(err) { //to log out of cookie sessions
 			if(err) {						//set them to null
@@ -340,5 +364,5 @@ function logOut(req, res) {
 		res.send();
 }
 
-db.createDB();
-app.listen(8500);
+db.createDB();//ensure there is a database
+app.listen(8500);//run the server
