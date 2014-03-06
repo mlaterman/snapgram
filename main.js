@@ -263,7 +263,7 @@ app.get('/feed', function(req, res) {
 /*
  * Admin Requirement Functions
  */
-app.get('/bulk/clear', function(req, res) { //TODO: Check these functions
+app.get('/bulk/clear', function(req, res) {
 	db.deleteDB();
 	db.createDB();
 });
@@ -308,17 +308,26 @@ app.get('*', function(req, res) { //unknown path
  */
 function respond400(message, res) {
 	util.log(message);
-	res.send(400, message);
+	res.render(400, {
+		status : 400,
+		error : message
+	});
 }
  
 function respond404(message, res) {
 	util.log(message);
-	res.send(404, message);
+	res.render(404, {
+			status : 404,
+			error : message
+	});
 }
 
 function respond500(message, res) {
 	util.log(message);
-	res.send(500, message);
+	res.render(500, {
+		status : 500,
+		error : message
+	});
 }
 
 function logOut(req, res) {

@@ -3,6 +3,10 @@ SENG 513 Team Project
 
 Changelog:
 
+v 0.11
+Changed error responses to use jad templates
+added 404 and 400 templates to views
+
 v 0.10
 more database functionality
 	viewing user feeds, /feed (need verification)
