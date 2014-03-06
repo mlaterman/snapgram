@@ -1,15 +1,25 @@
 var mysql = require('mysql');
 
+var db_host = 'localhost',
+    db_user = 'yao',
+    db_password = 'ileng';
+    
+
 var db_config = {
-    host: 'localhost',
-    user: 'yao',
-    password: 'ileng'
+    host: db_host,
+    user: db_user,
+    password: db_password
 };
-
+var snapgram_config = {
+    host: db_host,
+    user: db_user,
+    password: db_password,
+    database:'snapgram'
+};
 //function to create a database 'snapgram' with four tables: users, photos, followship, stream;
- var connection = mysql.createConnection(db_config);
-
+ 
 var createDb = function () {
+    var connection = mysql.createConnection(db_config);
     // create a database called snapgram to store infos.
     connection.query('CREATE DATABASE IF NOT EXISTS snapgram', function (err){
 	if(err) {
@@ -68,34 +78,22 @@ var createDb = function () {
 	    throw err;
 	}
     });
+    connection.end();
 } 
  // to delete a database 
 var deleteDb = function(){
+    var connection = mysql.createConnection(snapgram_config);
     connection.query("drop database if exists snapgram", function(err, results){
        if(err) 
 	console.log(err);
    }); 
-}
-
-var closeDb = function(){
     connection.end();
 }
-/*var closeDb = function (){
-    connection.end();
-};
-*/
 
-function _cst_connection(){
-    return mysql.createConnection({
-	host:hostName,
-	user:userName,
-	password:passwd,
-	database:'snapgram'
-    });
-};
+
 //hand a connection lost. Recreate a connection
 function handleDisconnect(){
-    connection = mysql.createConnection(db_config);
+    var connection = mysql.createConnection(snapgram_config);
 
     connection.connect(function(err){
 	if(err) {
@@ -114,6 +112,7 @@ function handleDisconnect(){
 }
 // check the existence of a user account, return true if so, false otherwise;
 function usr_is_exist(usrname,callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = "select * from users where usrname=" + mysql.escape(usrname);
     connection.query(sql, function(err, rows){
 	if(err)
@@ -125,6 +124,7 @@ function usr_is_exist(usrname,callback){
 	else
 	    callback(null, false);
     });
+    connection.end();
 }
 // add a user to the 'user' table, return UID if succeed,return uid, otherwise -1;
 // @param  username 
@@ -134,6 +134,7 @@ function usr_is_exist(usrname,callback){
 // @param  joinDate: timestamp the data and time that the user register, format: 'YYYY-MM-DD HH:MM:SS'
 // @output  if adding a user successfully, the data parameter in the callback is the uid, if user has alread existed, data is -1;
 function addUser(username, full_name, password, ts, callback){
+    var connection=mysql.createConnection(snapgram_config);
     var usr_exist = false;
     usr_is_exist(username, function(err, data){
 	if(err) throw err;
@@ -155,10 +156,12 @@ function addUser(username, full_name, password, ts, callback){
 		callback(null, -1);
 	}
     });
+    connection.end();
 }
 //Taking a user name as parameter and return its corresponding password to callback function
 // the callback function: callback(err, passwd) passwd is 0, if no such userName
 function getPassword(userName, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'SELECT passwd FROM users WHERE usrname =? ';
     connection.query(sql,[userName],function (err, rows){
 	if(err){
@@ -173,12 +176,14 @@ function getPassword(userName, callback){
 		callback(null, 0);
 	}
     });
+    connection.end();
 }
 //Check the provided password whether is belong to a user with id as userID
 //callback(err, match) If password and userId match, math is 1, otherwise, 0; When error happend, match is null;
 //@param userID: a unsigned int
 //@password: a string
 function checkPassword(userID, password, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'SELECT passwd FROM users WHERE uid = ?';
     connection.query(sql, [userID], function(err, rows){
 	if(err){
@@ -191,6 +196,7 @@ function checkPassword(userID, password, callback){
 		callback(null, 0);
 	}
     });
+    connection.end();
 }
 // add a photo to the 'photos' table
 // @param userId
@@ -198,6 +204,7 @@ function checkPassword(userID, password, callback){
 // @param fname: photo's name
 // @param callback: callback function, with two parameters, f(err, pid), 1st is err message and 2nd is photo id.
 function addPhoto(userID,ts,fname, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'INSERT INTO photos (uid, timestamp, name) VALUES (?,?,?)';
     connection.query(sql, [userID, ts, fname], function(err, rows){
 	if(err){
@@ -229,9 +236,11 @@ function addPhoto(userID,ts,fname, callback){
 	}
 	
     });
+    connection.end();
 }
 //add a path to a record with specified photo id, if succeeds, return 1, otherwise, return 0
 function addPath(pid, path, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'UPDATE photos SET path = ? where pid = ?';
     connection.query(sql, [path, pid], function(err, results){
 	if(err){
@@ -239,9 +248,13 @@ function addPath(pid, path, callback){
 	}
 	callback(null, 1);
     })
+
+    connection.end();
 }
 //delete a row with photo id as the input one. callback(err,data), if succeed in deleting, data is 1, otherwise, data is null;
 function deletePhoto(userID,pid, callback){
+    var connection = mysql.createConnection(snapgram_config);
+
     _deleteFromStream(pid,function(err){
 	if(err)
 	    throw err;
@@ -278,10 +291,12 @@ function deletePhoto(userID,pid, callback){
 
 	}
     });
-
+    
+    connection.end();
 }
 //get the storage path of a photo with ID as pid. Return PATAH if succeeds. otherwise, throw an error. 
 function getPath(pid, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'SELECT path FROM photos WHERE pid = ?';
     connection.query(sql, [pid], function(err, rows){
 	if(err){
@@ -289,6 +304,8 @@ function getPath(pid, callback){
 	}
 	callback(null,rows[0].path);
     });
+
+    connection.end();
 }
 function _isEmpty(obj) {
     for(var key in obj) {
@@ -301,6 +318,8 @@ function _isEmpty(obj) {
 //a followee is a person who is followed by followers
 //add a followee to a follower, if not succeeds, throw an error;
 function follow(followerID, followeeID, callback){
+    var connection = mysql.createConnection(snapgram_config);
+
     var sql = 'SELECT fid  FROM followship WHERE flwr_id = ? AND flwe_id = ?';
     connection.query(sql, [followerID, followeeID], function (err, results){
 	if(err)
@@ -321,8 +340,11 @@ function follow(followerID, followeeID, callback){
 	}
     
     });
+    
+    connection.end();
 }
 function unFollow(followerID, followeeID, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'DELETE FROM followship WHERE flwr_id = ? AND flwe_id =? ';
     connection.query(sql, [followerID, followeeID], function(err, results){
 	if(err){
@@ -331,8 +353,11 @@ function unFollow(followerID, followeeID, callback){
 	else
 	    callback(null);
     });
+
+    connection.end();
 }
 function addToStream(userID,photoID, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'INSERT INTO stream (uid, pid) VALUES (?, ?)';
     connection.query(sql, [userID, photoID], function(err, results){
 	if(err){
@@ -341,8 +366,11 @@ function addToStream(userID,photoID, callback){
 	else
 	    callback(null);
     });
+
+    connection.end();
 }
 function _deleteFromStream(photoID, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'DELETE FROM stream WHERE pid = ?';
     connection.query(sql, [photoID], function (err, results){
 	if(err){
@@ -351,8 +379,11 @@ function _deleteFromStream(photoID, callback){
 	else
 	    callback(null);
     });
+
+    connection.end();
 }
 function _getFollower(followeeID, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'SELECT flwr_id FROM followship WHERE flwe_id = ?';
     connection.query(sql, [followeeID], function (err, rows){
 	if(err)
@@ -365,10 +396,13 @@ function _getFollower(followeeID, callback){
 	    callback(err, followees);
 	}
     });
+
+    connection.end();
 }
 //return a user's feed   callback(err, photos)  photos is an object consisting of photos that should appear on the user's acnt
 //Object photos has three field, (pid, path, name)
 function getFeed(userID, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'SELECT photos.pid, photos.path, photos.name FROM photos, stream WHERE ' +
 	' photos.pid = stream.pid and stream.uid =? ORDER BY photos.pid DESC';
     connection.query(sql, [userID], function (err, rows){
@@ -378,11 +412,14 @@ function getFeed(userID, callback){
 	    callback(null, rows);
 	}
     });
+
+    connection.end();
 }
 //return information of photos uploaded by a user;
 //input: user id
 //output: a list of objects, each object has three fields (pid, name, path);
 function getMyFeed(userID, callback){
+    var connection = mysql.createConnection(snapgram_config);
     var sql = 'SELECT pid, name, path FROM photos where uid = ? ORDER BY pid DESC';
     connection.query(sql, [userID], function (err, rows){
 	if(err)
@@ -390,6 +427,8 @@ function getMyFeed(userID, callback){
 	else
 	    callback(null, rows);
     });
+
+    connection.end();
 }
 //function _end_connection(){
 //};
@@ -397,7 +436,6 @@ module.exports.createDb = createDb;
 module.exports.usr_is_exist = usr_is_exist;
 module.exports.addUser = addUser;
 module.exports.deleteDb = deleteDb;
-module.exports.closeDb = closeDb;
 module.exports.getPassword = getPassword;
 module.exports.addPhoto = addPhoto;
 module.exports.addPath = addPath;
