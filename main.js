@@ -71,7 +71,7 @@ app.get('/users/:id/follow', function(req, res) {
 			if(err) { 
 				respond500('Failed to follow user id: '+id, res);//assume DB failure
 			} else { // success
-				res.redirect('/users/'+id.slice(1));
+				res.redirect('/users/'+id);
 				res.send();
 			}
 		});
@@ -89,7 +89,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 				if(err) {
 					respond500('Failed to unfollow user id: '+id, res);
 				} else {
-					res.redirect('/users/'+id.slice(1));
+					res.redirect('/users/'+id);
 					res.send();
 				}
 		});
@@ -115,7 +115,6 @@ app.get('/users/:id', function(req, res) {
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
 						}
-						util.log("myPage="+isFollowing);
 						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
 					});
 				}
@@ -318,8 +317,8 @@ app.get('/stylesheets/image.css', function(req, res) {
 	res.sendfile('./public/stylesheets/image.css');
 });
 
-app.get('/stylesheets/text.css', function(req, res) {
-	res.sendfile('./public/stylesheets/text.css');
+app.get('/stylesheets/texts.css', function(req, res) {
+	res.sendfile('./public/stylesheets/texts.css');
 });
 
 app.get('/stylesheets/bootstrap.css', function(req, res) {
