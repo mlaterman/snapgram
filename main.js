@@ -12,6 +12,7 @@ app.use(express.session({
 	key : 'sid',
 	secret : 's3cr3t'
 })); //use session or cookieSession?
+app.use(express.bodyParser());
 app.engine('jade', require('jade').__express);
 /*
  * Session variables:
@@ -33,7 +34,7 @@ app.get('/users/new', function(req, res) { //return user signup form
 		res.render('sign_up', {error : "User Already Exists"});
 	}
 });
-//TODO: db - password hashing
+
 app.post('/users/create', function(req, res) { //create user from body info, logs in and redirects to feed
 	var uname = req.body.username;
 	var pass = req.body.password;
@@ -49,7 +50,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 				req.session.id = data;
 				res.redirect('/feed');
 				res.send();
-			} else if(data == -1) { //user already exists
+			} else if(data == 0) { //user already exists
 				req.session.lError = true;
 				res.redirect('/users/new');
 				res.send();
@@ -110,7 +111,7 @@ app.get('/users/:id', function(req, res) {
 					respond500('Database Failure', res);
 				} else {
 					var photos = photoQuery(req.query.page, rows);
-					res.render('feed', {images : photos});
+					res.render('feed', {myPage : '0', images : photos});
 				}
 			});
 		}
@@ -252,7 +253,7 @@ app.get('/feed', function(req, res) {
 				respond500('Error Reading Feed', res);
 			} else {
 				var photos = photoQuery(req.query.page, rows);
-				res.render('feed', {images : photos});
+				res.render('feed', {myPage : '1', images : photos});
 			}
 		});
 	}
