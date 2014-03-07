@@ -461,6 +461,17 @@ function _photoInsert(fid, uid, ts, fname, path){
 
     connection.end();
 }
+//share to a photo to one's followers
+//@param uid, a user's id
+//@param pid, a photo one wants to share
+//@return if succeed in sharing, return 1; if no such photo, return 0; 
+/*function sharePhoto(userID, photoID, callback) {
+    var connection = mysql.createConnection(db_config);
+
+    var sql = '
+
+    connection.end();
+}*/
 
 module.exports.createTables = createTables;
 module.exports.usr_is_exist = usr_is_exist;
