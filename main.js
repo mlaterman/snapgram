@@ -48,7 +48,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 				req.session.valid = true;
 				req.session.lError = null;
 				util.log("C-ASSIGNED ID: "+data);
-				req.session.id = data;
+				req.session.userid = data;
 				res.redirect('/feed');
 				res.send();
 			} else if(data == 0) { //user already exists
@@ -69,7 +69,7 @@ app.get('/users/:id/follow', function(req, res) {
 		res.redirect('/sessions/new')
 		res.send();
 	} else {
-		db.follow(req.session.id, id, function(err) {
+		db.follow(req.session.userid, id, function(err) {
 			if(err) { 
 				respond500('Failed to follow user id: '+id, res);//assume DB failure
 			} else { // success
@@ -87,7 +87,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 		res.redirect('/sessions/new')
 		res.send();
 	} else {
-		db.unFollow(req.session.id, id, function(err) {
+		db.unFollow(req.session.userid, id, function(err) {
 				if(err) {
 					respond500('Failed to unfollow user id: '+id, res);
 				} else {
@@ -112,7 +112,7 @@ app.get('/users/:id', function(req, res) {
 					respond500('Database Failure', res);
 				} else {
 					var photos = photoQuery(req.query.page, rows);
-					db.checkFollow(req.session.id, id, function(err, isFollowing) {
+					db.checkFollow(req.session.userid, id, function(err, isFollowing) {
 						if(err) {//do not show follow or unfollow buttons if there is an error checking follows status
 							isFollowing = err;
 						} else {//set isFollowing to proper string
@@ -144,8 +144,9 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			} else if(id > 0) { //user found
 				req.session.valid = true;
 				req.session.lError = null;
-				util.log("L-ASSIGNED ID: "+id);
-				req.session.id = id;
+				util.log("DATABASE RETURNED ID: "+id);
+				req.session.userid = id;
+				util.log("L-ASSIGNED ID: "+req.session.userid);
 				res.redirect('/feed');
 				res.send();
 			} else { //no user found
@@ -170,7 +171,7 @@ app.post('/photos/create', function(req, res) {
 		res.redirect('/sessions/new')
 		res.send();
 	} else {
-		var uid = req.session.id;
+		var uid = req.session.userid;
 		var file = req.files.image;
 		util.log("MAKING NEW PHOTO of UID: "+uid);
 		db.addPhoto(uid, new Date(), file.name, function(err, pid) {
@@ -184,12 +185,12 @@ app.post('/photos/create', function(req, res) {
 					var path = './photos/'+pid+ext[0];
 					fs.writeFile(path, file, function(fserr) {
 						if(fserr) {//file system error
-							db.deletePhoto(req.session.id, pid, function(e){});
+							db.deletePhoto(req.session.userid, pid, function(e){});
 							respond500('Filesystem Error Uploading Photo', res);
 						} else {
 							db.addPath(pid, path, function(val) {
 									if(val == 0) {//error updateing path on server
-										db.deletePhoto(req.session.id, pid, function(e){});
+										db.deletePhoto(req.session.userid, pid, function(e){});
 										fs.unlink(path, function(e){});
 									}
 							});
@@ -250,8 +251,8 @@ app.get('/feed', function(req, res) {
 		res.redirect('/sessions/new');
 		res.send();
 	} else {
-		util.log("SENT MY ID: "+req.session.id);
-		db.getFeed(req.session.id, function(err, rows) {
+		util.log("SENT MY ID: "+req.session.userid);
+		db.getFeed(req.session.userid, function(err, rows) {
 			if (err) {
 				respond500('Error Reading Feed', res);
 			} else {
