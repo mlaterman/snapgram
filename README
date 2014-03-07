@@ -9,9 +9,9 @@ TODO:
 	bulk uploads
 	sharing
 	
-	DB: login function
+	DB: login function (the checkPassword function, done)
 	DB: getFeed and getMyFeed need to return more attributes
-	DB: password hashing
+	DB: password hashing (done)
 	
 	JADE: new users form should have room for an error message variable called error
 	JADE: follow and unfollow buttons on other's pages

@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var pc = require('./passwdCrypt');
 
 var db_host = 'localhost',
     db_user = 'yao',
@@ -8,7 +9,8 @@ var db_host = 'localhost',
 var db_config = {
     host: db_host,
     user: db_user,
-    password: db_password
+    password: db_password,
+    multipleStatements:true
 };
 var snapgram_config = {
     host: db_host,
@@ -27,57 +29,67 @@ var createDb = function () {
 	    console.log(err);
 	}
     });
-
-    // use the created database
+     // use the created database
     connection.query('USE snapgram', function (err){
 	if (err)
-	    throw err;;
+	    throw err;
     })
-    // create a table called 'users'  with fileds
+
+        // create a table called 'users'  with fileds
     var usr_fld = "(uid INT UNSIGNED NOT NULL AUTO_INCREMENT  primary key, \
 		    fullname char(20) not null, \
 		    usrname char(20) not null, \
-		    passwd char(20) not null, \
-		    joinDate DATETIME)";
+		    passwd char(40) not null, \
+		    joinDate DATETIME);";
     var crt_usr_tbl = 'CREATE TABLE IF NOT EXISTS users ' + usr_fld;
-    connection.query(crt_usr_tbl, function (err, results){
+/*    connection.query(crt_usr_tbl, function (err, results){
 	if (err) throw err;
     });
+*/
     // create a table called 'photos' to store all the uploaded photos and theirs infos
     var photo_fld = "(pid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key," +
 		    " uid INT UNSIGNED, " +
 		    " timeStamp DATETIME, " +
 		    " name VARCHAR(30), " +
 		    " path VARCHAR(40), " +
-		    " FOREIGN KEY (uid) REFERENCES users (uid) )" 
+		    " FOREIGN KEY (uid) REFERENCES users (uid) );" 
 
     var crt_photo_tbl = 'CREATE TABLE IF NOT EXISTS photos ' + photo_fld;
-    connection.query(crt_photo_tbl, function (err, results){
+/*    connection.query(crt_photo_tbl, function (err, results){
 	if (err) throw err;
     });
-
+*/
     // create a table called 'followship' to store the relationship among followers and followees
     var flw_fld = "( fid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key, " +
 		   " flwr_id INT UNSIGNED, flwe_id INT UNSIGNED, " +
 		   " FOREIGN KEY (flwr_id) REFERENCES users (uid), " +
-		   " FOREIGN KEY (flwe_id) REFERENCES users (uid) )";
+		   " FOREIGN KEY (flwe_id) REFERENCES users (uid) );";
 
     var crt_flw_tbl = 'CREATE TABLE IF NOT EXISTS followship ' + flw_fld;
-    connection.query(crt_flw_tbl, function (err, results){
+/*    connection.query(crt_flw_tbl, function (err, results){
 	if (err) throw err;
     });
+*/
     // create a table called 'stream' to add a photo uploaed by a person to all his followers
     var stream_fld = "( sid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key, " +
 		      " uid INT UNSIGNED, pid INT UNSIGNED, " +
 		      " FOREIGN KEY (uid) REFERENCES users (uid) , " +
-		      " FOREIGN KEY (pid) REFERENCES photos (pid) )";
+		      " FOREIGN KEY (pid) REFERENCES photos (pid) );";
     var crt_strm_tbl = 'CREATE TABLE IF NOT EXISTS stream ' + stream_fld;
-    connection.query(crt_strm_tbl, function(err, results){
+/*    connection.query(crt_strm_tbl, function(err, results){
 	if (err) {
 	    console.log("Error in creating the stream table. ");
 	    throw err;
 	}
     });
+*/
+    var query = crt_usr_tbl + crt_photo_tbl + crt_flw_tbl + crt_strm_tbl;
+    connection.query(query, function(err){
+	if(err){
+	    console.log('Error in creating tables');
+	    throw err;
+	}
+    })
     connection.end();
 } 
  // to delete a database 
@@ -128,31 +140,22 @@ function usr_is_exist(usrname,callback){
 // @param  username 
 // @param  fullname
 // @param  password
-// @param  email?
 // @param  joinDate: timestamp the data and time that the user register, format: 'YYYY-MM-DD HH:MM:SS'
-// @output  if adding a user successfully, the data parameter in the callback is the uid, if user has alread existed, data is -1;
+// @output  if adding a user successfully, the data parameter in the callback is the uid, if user has alread existed, data is 0;
 function addUser(username, full_name, password, ts, callback){
     var connection=mysql.createConnection(snapgram_config);
-    var usr_exist = false;
-    usr_is_exist(username, function(err, data){
-	if(err) throw err;
-	else{
-	    if(!data){
-	//return  a UID for the userj
-		var sql = 'INSERT INTO users (fullname, usrname, passwd, joinDate)' +
-		    ' VALUES ( ?, ?,?, ?)';
-		connection.query(sql, [full_name, username, password, ts],function(err, results){
-		    if (err)
-			callback(err,null);
-		    else{ 
-			callback(null,results.insertId);
-			//console.log(results.insertId);
-		    }
-		    })
-	    }
-	    else
-		callback(null, -1);
-	}
+
+    var sql = " INSERT INTO users (fullname, usrname, passwd, joinDate)" +
+	      " SELECT * FROM ( SELECT ?, ?, ?, ? ) AS tmp " +
+	      " WHERE NOT EXISTS ( " +
+	      " SELECT usrname FROM users WHERE  usrname = ? " +
+	      " ) LIMIT 1;";
+    
+    connection.query(sql, [full_name, username, pc.encrypt(password),ts,username],function(err, results){
+	if(err)
+	    throw err;
+	else
+	    callback(null, results.insertId);
     });
     connection.end();
 }
@@ -186,7 +189,7 @@ function getPassword(userName, callback){
 	    //console.log('userName is', userName);
 	    //console.log(rows);
 	    if(!_isEmpty(rows))
-		callback(null, rows[0].passwd);
+		callback(null, pc.decrypt(rows[0].passwd));
 	    else
 		callback(null, 0);
 	}
@@ -205,7 +208,7 @@ function checkPassword(userName, password, callback){
 	    callback(err, null);
 	}
 	else{
-	    if(mysql.escape(rows[0].passwd) == mysql.escape(password))
+	    if(mysql.escape(pc.decrypt(rows[0].passwd)) == mysql.escape(password))
 		callback(null, rows[0].uid);
 	    else
 		callback(null, 0);
@@ -317,7 +320,10 @@ function getPath(pid, callback){
 	if(err){
 	    callback(err,null);
 	}
-	callback(null,rows[0].path);
+	else if(_isEmpty(rows))
+		callback("No such pid",null);
+	     else
+		callback(null,rows[0].path);
     });
 
     connection.end();
@@ -377,7 +383,7 @@ function unFollow(followerID, followeeID, callback){
 			callback(null,true);
 		});
 	    }
-    }
+    });
 
     connection.end();
 }
@@ -457,7 +463,7 @@ function getMyFeed(userID, callback){
 }
 //function _end_connection(){
 //};
-module.exports.createDB = createDb;
+module.exports.createDb = createDb;
 module.exports.userExists = usr_is_exist;
 module.exports.addUser = addUser;
 module.exports.deleteDB = deleteDb;
