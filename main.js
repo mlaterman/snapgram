@@ -29,9 +29,9 @@ app.use(app.router)
  */
 app.get('/users/new', function(req, res) { //return user signup form
 	if(req.session.lError == null) {
-		res.render('sign_up', {});
+		res.render('sign_up', {title : "User Sign-Up"});
 	} else {
-		res.render('sign_up', {error : "User Already Exists"});
+		res.render('sign_up', {title : "User Sign-Up", error : "User Already Exists"});
 	}
 });
 
@@ -124,7 +124,7 @@ app.get('/users/:id', function(req, res) {
 								util.log('Unable to get username for id: '+id);
 								uname = "???"
 							}
-							res.render('feed', {username : uname, preq : page.toString(), myPage : isFollowing, uid : id, images : photos});
+							res.render('feed', {title : uname+"'s Feed",username : uname, preq : page.toString(), myPage : isFollowing, uid : id, images : photos});
 						});
 					});
 				}
@@ -135,9 +135,9 @@ app.get('/users/:id', function(req, res) {
 
 app.get('/sessions/new', function(req, res) { //return login form
 	if(req.session.lError == null) {
-		res.render('login', {});
+		res.render('login', {title : "Login Page"});
 	} else {
-		res.render('login', {error : "Login Failed"});
+		res.render('login', {title : "Login Page", error : "Login Failed"});
 	}
 });
 
@@ -168,7 +168,7 @@ app.get('/photos/new', function(req, res) {
 		res.redirect('/sessions/new')
 		res.send();
 	} else {
-		res.render('upload', {});
+		res.render('upload', {title : "Upload Photo"});
 	}
 });
 
@@ -280,7 +280,7 @@ app.get('/feed', function(req, res) {
 				var page = req.query.page;
 				var photos = photoQuery(page, rows);
 				page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1;
-				res.render('feed', {username : req.session.username, preq : page.toString(), myPage : '1', images : photos});
+				res.render('feed', {title : "My Feed", username : req.session.username, preq : page.toString(), myPage : '1', images : photos});
 			}
 		});
 	}
@@ -385,21 +385,24 @@ function respond400(message, res) {
 	util.log(message);
 	res.render(400, {
 		status : 400,
-		error : message
+		error : message,
+		title : "400 - Bad Request"
 	});
 }
 function respond404(message, res) {
 	util.log(message);
 	res.render(404, {
 			status : 404,
-			error : message
+			error : message,
+			title : "404 - Page Not Found"
 	});
 }
 function respond500(message, res) {
 	util.log(message);
 	res.render(500, {
 		status : 500,
-		error : message
+		error : message,
+		title : "500 - Server Error"
 	});
 }
 /*
