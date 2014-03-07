@@ -183,7 +183,25 @@ app.post('/photos/create', function(req, res) {
 					respond400('No extension found', res);
 				} else {
 					var path = './photos/'+pid+ext[0];
-					fs.readFile(ufile.path, function(rerr, data) {
+					var fStream = fs.createReadStream(ufile.path);
+					var oStream = fs.createWriteStream(path);
+					util.pump(fStream, oStream, function(ferr) {
+						if(ferr) { //error transerring from fStream to oStream
+							db.deletePhoto(req.session.userid, pid, function(e){});
+							fs.unlink(path, function(e){});
+							respond500('Filesystem Error Uploading Photo', res);
+						} else {
+							db.addPath(pid, path, function(val) {
+								if(val == 0) {//error updateing path on server
+									db.deletePhoto(req.session.userid, pid, function(e){});
+									fs.unlink(path, function(e){});
+								}
+							});
+							res.redirect('/feed');//file was uploaded
+							res.send();
+						}
+					});
+					/*fs.readFile(ufile.path, function(rerr, data) {
 							if(rerr) {
 								db.deletePhoto(req.session.userid, pid, function(e){});
 								respond500('Filesystem Error Uploading Photo (Reading)', res);
@@ -204,7 +222,7 @@ app.post('/photos/create', function(req, res) {
 									}
 								});
 							}
-					});
+					});*/
 				}
 			}
 		});
@@ -327,6 +345,10 @@ app.get('/stylesheets/text.css', function(req, res){
 	res.sendfile('./stylesheets/text.css');
 });
 
+app.get('/stylesheets/bootstrap.css', function(req, res){
+	//res.set('Content-Type', 'text/css');
+	res.sendfile('./stylesheets/boots.css');
+});
 /*
  * Homepage catch
  */
