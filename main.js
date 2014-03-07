@@ -12,9 +12,8 @@ app.use(express.session({
 	key : 'sid',
 	secret : 's3cr3t'
 })); //use session or cookieSession?
-app.use(express.bodyParser());
+app.use(express.bodyParser());//bodyParser includes express.json
 app.set('view engine', 'jade');
-app.use(express.json());
 app.use(app.router)
 app.engine('jade', require('jade').__express);
 /*
@@ -48,6 +47,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 			if(data > 0) { //creation successful; set user id to data
 				req.session.valid = true;
 				req.session.lError = null;
+				util.log("C-ASSIGNED ID: %s", data);
 				req.session.id = data;
 				res.redirect('/feed');
 				res.send();
@@ -97,8 +97,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 		});
 	}
 });
-//TODO: db - getMyFeed needs to return more attributes
-//		db - need a function to check if a user is following another user (return true or false)
+
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
 	db.checkUserID(id, function(err, val) {
@@ -107,12 +106,20 @@ app.get('/users/:id', function(req, res) {
 		} else if(!val) {
 			respond404('User id: '+id+' not found', res);
 		} else {
+			util.log("SENT ID: %s", id);
 			db.getMyFeed(id, function(err, rows) {
 				if(err) {
 					respond500('Database Failure', res);
 				} else {
 					var photos = photoQuery(req.query.page, rows);
-					res.render('feed', {myPage : '0', uid: id, images : photos});
+					db.checkFollow(req.session.id, id, function(err, isFollowing) {
+						if(err) {//do not show follow or unfollow buttons if there is an error checking follows status
+							isFollowing = err;
+						} else {//set isFollowing to proper string
+							isFollowing = isFollowing ? '2' : '0';
+						}
+						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
+					});
 				}
 			});
 		}
@@ -137,6 +144,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			} else if(id > 0) { //user found
 				req.session.valid = true;
 				req.session.lError = null;
+				util.log("L-ASSIGNED ID: %s", data);
 				req.session.id = id;
 				res.redirect('/feed');
 				res.send();
@@ -236,12 +244,13 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-//TODO: db - getFeed needs to return more attributes
+
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
 		res.send();
 	} else {
+		util.log("SENT MY ID: %s", req.session.id);
 		db.getFeed(req.session.id, function(err, rows) {
 			if (err) {
 				respond500('Error Reading Feed', res);
@@ -296,18 +305,18 @@ app.post('/bulk/streams', function(req, res) {
  * eg: css, scripts, ...
  */
 app.get('/stylesheets/style.css', function(req, res){
-	res.set('Content-Type', 'text/css');
-	res.sendFile('./stylesheets/style.css');
+	//res.set('Content-Type', 'text/css');
+	res.sendfile('./stylesheets/style.css');
 });
 
 app.get('/stylesheets/image.css', function(req, res){
-	res.set('Content-Type', 'text/css');
-	res.sendFile('./stylesheets/image.css');
+	//res.set('Content-Type', 'text/css');
+	res.sendfile('./stylesheets/image.css');
 });
 
 app.get('/stylesheets/text.css', function(req, res){
-	res.set('Content-Type', 'text/css');
-	res.sendFile('./stylesheets/text.css');
+	//res.set('Content-Type', 'text/css');
+	res.sendfile('./stylesheets/text.css');
 });
 
 /*
@@ -351,7 +360,7 @@ function respond500(message, res) {
 	});
 }
 /*
- * Method for hadnleing querystrings for feeds
+ * Method for handleing querystrings for feeds
  * Returns upto 30 photos. If the passed page value is null, less than 2
  * or not a number, the first 30 are chosen. If the starting page results
  * ina value larger than the full collection a recursive call is made
@@ -359,6 +368,8 @@ function respond500(message, res) {
  * @page the requested page to view
  * @rows the full collection of photos
  * @return a slice of the collection
+ * 
+ * TODO: JSON.stringify needed?
  */ 
 function photoQuery(page, rows) {
 	var photos;

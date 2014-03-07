@@ -1,0 +1,18 @@
+SENG 513 Team Project
+
+Unimplemented Features:
+	Sharing
+	
+Untested Features
+	Bulk Uploads (users/streams)
+	Feeds
+	Following/Unfollowing
+	viewing images
+
+TODO:
+	Deploy and test
+	
+Changelog:
+v 0.50
+	Following & Unfollowing should now appear on other user's feeds
+	css and image return types fixed
