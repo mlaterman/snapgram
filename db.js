@@ -2,8 +2,8 @@ var mysql = require('mysql');
 var pc = require('./passwdCrypt');
 
 var db_host = 'localhost',
-    db_user = 'yao',
-    db_password = 'ileng';
+    db_user = 's513_yaozhao',
+    db_password = '10125166';
     
 
 var db_config = {
@@ -16,49 +16,33 @@ var snapgram_config = {
     host: db_host,
     user: db_user,
     password: db_password,
-    database:'snapgram'
+    database:'s513_yaozhao',
+    multipleStatements:true
 };
 
 //function to create a database 'snapgram' with four tables: users, photos, followship, stream; 
-var createDb = function () {
-    var connection = mysql.createConnection(db_config);
-    // create a database called snapgram to store infos.
-    connection.query('CREATE DATABASE IF NOT EXISTS '+snapgram_config.database, function (err){
-	if(err) {
-	    console.log('unable to create the database '+snapgram_config.database);
-	    console.log(err);
-	}
-    });
-     // use the created database
-    connection.query('USE '+snapgram_config.database, function (err){
-	if (err)
-	    throw err;
-    })
+var createTables = function () {
+    var connection = mysql.createConnection(snapgram_config);
+    connection.connect();
 
         // create a table called 'users'  with fileds
-    var usr_fld = "(uid INT UNSIGNED NOT NULL AUTO_INCREMENT  primary key, \
+    var usr_fld = "( uid INT UNSIGNED NOT NULL AUTO_INCREMENT  primary key, \
 		    fullname char(20) not null, \
 		    usrname char(20) not null, \
 		    passwd char(40) not null, \
 		    joinDate DATETIME);";
     var crt_usr_tbl = 'CREATE TABLE IF NOT EXISTS users ' + usr_fld;
-/*    connection.query(crt_usr_tbl, function (err, results){
-	if (err) throw err;
-    });
-*/
+
     // create a table called 'photos' to store all the uploaded photos and theirs infos
-    var photo_fld = "(pid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key," +
+    var photo_fld = "( pid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key," +
 		    " uid INT UNSIGNED, " +
 		    " timeStamp DATETIME, " +
 		    " name VARCHAR(30), " +
 		    " path VARCHAR(40), " +
-		    " FOREIGN KEY (uid) REFERENCES users (uid) );" 
+		    " FOREIGN KEY (uid) REFERENCES users (uid) );" ;
 
     var crt_photo_tbl = 'CREATE TABLE IF NOT EXISTS photos ' + photo_fld;
-/*    connection.query(crt_photo_tbl, function (err, results){
-	if (err) throw err;
-    });
-*/
+
     // create a table called 'followship' to store the relationship among followers and followees
     var flw_fld = "( fid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key, " +
 		   " flwr_id INT UNSIGNED, flwe_id INT UNSIGNED, " +
@@ -66,23 +50,14 @@ var createDb = function () {
 		   " FOREIGN KEY (flwe_id) REFERENCES users (uid) );";
 
     var crt_flw_tbl = 'CREATE TABLE IF NOT EXISTS followship ' + flw_fld;
-/*    connection.query(crt_flw_tbl, function (err, results){
-	if (err) throw err;
-    });
-*/
+
     // create a table called 'stream' to add a photo uploaed by a person to all his followers
     var stream_fld = "( sid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key, " +
 		      " uid INT UNSIGNED, pid INT UNSIGNED, " +
 		      " FOREIGN KEY (uid) REFERENCES users (uid) , " +
 		      " FOREIGN KEY (pid) REFERENCES photos (pid) );";
     var crt_strm_tbl = 'CREATE TABLE IF NOT EXISTS stream ' + stream_fld;
-/*    connection.query(crt_strm_tbl, function(err, results){
-	if (err) {
-	    console.log("Error in creating the stream table. ");
-	    throw err;
-	}
-    });
-*/
+
     var query = crt_usr_tbl + crt_photo_tbl + crt_flw_tbl + crt_strm_tbl;
     connection.query(query, function(err){
 	if(err){
@@ -93,9 +68,16 @@ var createDb = function () {
     connection.end();
 } 
  // to delete a database 
-var deleteDb = function(){
+var deleteTables= function(){
     var connection = mysql.createConnection(snapgram_config);
-    connection.query("drop database if exists "+snapgram_config.database, function(err, results){
+    var sql = "SET FOREIGN_KEY_CHECKS = 0;" +
+	      "DROP table if exists users; " + 
+	      "drop table if exists photos; " +
+	      "drop table if exists followship; " +
+	      "drop table if exists stream; " +
+	      "SET FOREIGN_KEY_CHECKS = 1;";
+
+    connection.query(sql, function(err, results){
        if(err) 
 	console.log(err);
    }); 
@@ -477,10 +459,10 @@ function _photoInsert(fid, uid, ts, fname, path){
     connection.end();
 }
 
-module.exports.createDb = createDb;
+module.exports.createTables = createTables;
 module.exports.userExists = usr_is_exist;
 module.exports.addUser = addUser;
-module.exports.deleteDB = deleteDb;
+module.exports.deleteTables = deleteTables;
 module.exports.getPassword = getPassword;
 module.exports.addPhoto = addPhoto;
 module.exports.addPath = addPath;
