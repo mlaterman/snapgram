@@ -1,27 +1,30 @@
 SENG 513 Team Project
 
+Extras:
+	Logout option added (GET /logout), redirects to login page after
+		destroying session
+
 Unimplemented Features:
 	Sharing
 	
 Untested Features
 	Bulk Uploads (users/streams)
 	Following/Unfollowing
-	view another user's feed
 	feedpage with query string (need more than 30 images in a feed)
-	thumbnail images
 	
 TODO:
 	Deploy and test
 		Fix feed to use thumbnails
 		
 Changelog:
+v 0.65
+	follow redirect routing fix
+
 v 0.60
 	Various fixes
 
 v 0.57
-	Date passing now passes numeric UTC value
-
-v 0.56
+	Date passing now passes numeric UTC value	
 	main.js code cleanup
 	logout added
 	

@@ -71,7 +71,7 @@ app.get('/users/:id/follow', function(req, res) {
 			if(err) { 
 				respond500('Failed to follow user id: '+id, res);//assume DB failure
 			} else { // success
-				res.redirect('/users/'+id);
+				res.redirect('/users/'+id.slice(1));
 				res.send();
 			}
 		});
@@ -89,7 +89,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 				if(err) {
 					respond500('Failed to unfollow user id: '+id, res);
 				} else {
-					res.redirect('/users/'+id);
+					res.redirect('/users/'+id.slice(1));
 					res.send();
 				}
 		});
@@ -113,6 +113,7 @@ app.get('/users/:id', function(req, res) {
 						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
 							isFollowing = "Unable to resolve follow status";
 						} else {//set isFollowing to proper string
+							util.log(isFollowing);
 							isFollowing = isFollowing ? '2' : '0';
 						}
 						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
