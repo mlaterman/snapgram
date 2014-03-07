@@ -20,7 +20,8 @@ app.use(app.router)
  * Session variables:
  * valid - end user is logged in
  * lError - login/create account error occured
- * id - user's id number
+ * userid - user's id number
+ * username - the user's login name
  */
  
 /*
@@ -47,6 +48,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 				req.session.valid = true;
 				req.session.lError = null;
 				req.session.userid = data;
+				req.session.username = uname;
 				res.redirect('/feed');
 				res.send();
 			} else if(data == 0) { //user already exists
@@ -144,6 +146,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 				req.session.valid = true;
 				req.session.lError = null;
 				req.session.userid = id;
+				req.session.username = uname;
 				res.redirect('/feed');
 				res.send();
 			} else { //no user found
@@ -244,6 +247,20 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
+/*
+ * Optional Share Spec
+ */ 
+app.get('/photos/:id.:ext/share', function(req, res) {
+	var id = req.params.id;
+	
+	db.share(req.session.userid, id, function(err, val) {
+		if(err) {
+			
+		} else {
+			
+		}
+	});
+});
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
@@ -257,8 +274,8 @@ app.get('/feed', function(req, res) {
 				var page = req.query.page;
 				var photos = photoQuery(page, rows);
 				page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
-				util.log("type of page "+typeof(page));
-				res.render('feed', {preq : page.toString(), myPage : '1', images : photos});
+				util.log("page: "+page.toString());
+				res.render('feed', {username : req.session.username, preq : page.toString(), myPage : '1', images : photos});
 			}
 		});
 	}
