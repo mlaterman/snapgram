@@ -17,6 +17,9 @@ TODO:
 		Fix feed to use thumbnails
 		
 Changelog:
+v 0.57
+	Date passing now passes numeric UTC value
+
 v 0.56
 	main.js code cleanup
 	logout added

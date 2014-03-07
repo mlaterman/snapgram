@@ -26,7 +26,6 @@ app.use(app.router)
 /*
  * Requests needed for basic functionality
  */
-//TODO: jade - create error message field
 app.get('/users/new', function(req, res) { //return user signup form
 	if(req.session.lError == null) {
 		res.render('sign_up', {});
@@ -40,7 +39,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 	var pass = req.body.password;
 	var fname = req.body.fullname;
 	
-	db.addUser(uname, fname, pass, new Date(), function(err, data) {
+	db.addUser(uname, fname, pass, Date.now(), function(err, data) {
 		if(err) {
 			respond500('Database Error', res);
 		} else {
@@ -169,7 +168,7 @@ app.post('/photos/create', function(req, res) {
 	} else {
 		var uid = req.session.userid;
 		var uFile = req.files.image;
-		db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
+		db.addPhoto(uid, Date.now(), uFile.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
 			} else {//pid returned
@@ -385,8 +384,6 @@ function respond500(message, res) {
  * @page the requested page to view
  * @rows the full collection of photos
  * @return a slice of the collection
- * 
- * TODO: JSON.stringify needed?
  */ 
 function photoQuery(page, rows) {
 	var photos;
