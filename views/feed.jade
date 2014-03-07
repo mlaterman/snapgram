@@ -44,5 +44,11 @@ block content
 		div.control_group
 			div.controls
 				button.botton_style(type = 'submit', name='page', value='more') More
+
+	form.form_style(action = '/logout', method = 'GET')
+		div.control.group
+			div.controls
+				button.button_style(type = 'submit', value = 'Log out') Log out
+
 	p do you want to 
 		a(href='photos/new') <strong>upload photos</strong>
