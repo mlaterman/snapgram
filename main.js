@@ -111,7 +111,7 @@ app.get('/users/:id', function(req, res) {
 					var photos = photoQuery(req.query.page, rows);
 					db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
 						if(folEerr) {//do not show follow or unfollow buttons if there is an error checking follows status
-							isFollowing = folEerr;
+							isFollowing = "Unable to resolve follow status";
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
 						}
@@ -322,7 +322,7 @@ app.get('/stylesheets/text.css', function(req, res) {
 });
 
 app.get('/stylesheets/bootstrap.css', function(req, res) {
-	res.sendfile('./public/stylesheets/boots.css');
+	res.sendfile('./public/stylesheets/bootstrap.css');
 });
 
 app.get('/logout', function (req, res) {
