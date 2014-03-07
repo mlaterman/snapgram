@@ -2,6 +2,10 @@ SENG 513 Team Project
 
 
 Changelog:
+v 0.41
+photos directory added
+db.js export name userExists changed to usr_is_exist
+
 v 0.40
 response css types changed
 	added routing for stylesheets/text.css
