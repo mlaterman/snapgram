@@ -21,7 +21,7 @@ block content
 		- {
 			//- console.log(photos_array.length);
 			- for(var item in photos_array[i])
-				- if(item === 'address')
+				- if(item === 'path')
 					- {
 						//- console.log(photos_array[i][item]);
 						div.image
@@ -44,3 +44,5 @@ block content
 		div.control_group
 			div.controls
 				button.botton_style(type = 'submit', name='page', value='more') More
+	p do you want to 
+		a(href='photos/new') <strong>upload photos</strong>
