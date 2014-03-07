@@ -2,6 +2,9 @@ SENG 513 Team Project
 
 
 Changelog:
+v 0.28
+bulk testing functions integrated
+
 v 0.26
 db.js removed hardcoded links to 'snapgram' database
 
