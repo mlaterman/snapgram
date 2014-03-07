@@ -47,7 +47,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 			if(data > 0) { //creation successful; set user id to data
 				req.session.valid = true;
 				req.session.lError = null;
-				util.log("C-ASSIGNED ID: %s", data);
+				util.log("C-ASSIGNED ID: "+data);
 				req.session.id = data;
 				res.redirect('/feed');
 				res.send();
@@ -106,7 +106,7 @@ app.get('/users/:id', function(req, res) {
 		} else if(!val) {
 			respond404('User id: '+id+' not found', res);
 		} else {
-			util.log("SENT ID: %s", id);
+			util.log("SENT ID: "+id);
 			db.getMyFeed(id, function(err, rows) {
 				if(err) {
 					respond500('Database Failure', res);
@@ -144,7 +144,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			} else if(id > 0) { //user found
 				req.session.valid = true;
 				req.session.lError = null;
-				util.log("L-ASSIGNED ID: %s", data);
+				util.log("L-ASSIGNED ID: "+data);
 				req.session.id = id;
 				res.redirect('/feed');
 				res.send();
@@ -172,7 +172,7 @@ app.post('/photos/create', function(req, res) {
 	} else {
 		var uid = req.session.id;
 		var file = req.files.image;
-		
+		util.log("MAKING NEW PHOTO of UID: "+uid);
 		db.addPhoto(uid, new Date(), file.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
@@ -250,7 +250,7 @@ app.get('/feed', function(req, res) {
 		res.redirect('/sessions/new');
 		res.send();
 	} else {
-		util.log("SENT MY ID: %s", req.session.id);
+		util.log("SENT MY ID: "+req.session.id);
 		db.getFeed(req.session.id, function(err, rows) {
 			if (err) {
 				respond500('Error Reading Feed', res);
