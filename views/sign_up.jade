@@ -2,36 +2,32 @@ extends layout
 
 block title
 
-	title Register
+	title Sign up
 
 block content
 
+	//if(error != '')
+		//p Opp, there is an error: !{error}
+
 	div.container
-		div.row
-			div.span
-			br
-			if(error != '')
-				p There is something error with: !{error}
-			br
-			form.form_style(action = '/users/create', method = 'post')
-				fieldset
-					legend Register!
-					div.control_group
-						label.control_label(for = 'new_Fullname')
-						div.controls
-							input#new_Fullname.input_style(name = 'fullname', type = 'text', placeholder = 'input fullname', required)
-					div.control_group
-						label.control_label(for = 'new_Username')
-						div.controls
-							input#new_Username.input_style(name = 'username', type = 'text', placeholder = 'input username', required)
-					div.control_group
-						label.control_label(for = 'new_Password')
-						div.controls
-							input#new_Password.input_style(name = 'password', type = 'password', placeholder = 'input password', required)
-					div.control.group
-						div.controls
-							button.button_style(type = 'submit', value = 'Sign up') Sign up
-					div.control.group
-						div.controls
-							button.button_style(type = 'reset') Reset
-						
+
+		br
+
+		form.form-signin(action = '/users/create', method = 'post')
+
+			h2.form-signin-heading Please Sign up:
+
+			input.form-control(name = 'fullname', type = 'text', placeholder = 'input fullname', required autofocus)
+
+			input.form-control(name = 'username', type = 'text', placeholder = 'input username', required)
+
+			input.form-control(name = 'password', type = 'password', placeholder = 'input password', required)
+
+			button(class = 'btn btn-lg btn-primary btn-block', type = 'submit', value = 'Sign up') Sign up
+
+			button(class = 'btn btn-lg btn-primary btn-block', type = 'reset') Reset
+
+			p.small
+				em Already have an account? Press 
+				a(href = '/sessions/new') here
+				|  to Log in.
