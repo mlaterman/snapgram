@@ -2,34 +2,27 @@ extends layout
 
 block title
 
-  title #{title}
+	title #{title}
 
 block content
 
-  div.container
-    div.row
-      div.span
-        br 
-        br 
-        form.form-control(action = '/sessions/create', method = 'post')
-          fieldset
-            legend Log in!
-            if(error != '')
-                p !{error}
-            div.form-group
-              label.form-control(for = 'input_UserName') Your Username
-              div.controls
-                input#input_UserName.input_style(name = 'username', type = 'text', placeholder = 'input username', required)
-            div.form-group
-              label.form-control(for = 'input_Password') Password
-              div.controls
-                input#input_Password.input_style(name = 'password', type = 'password', placeholder = 'input password', required)
-            div.form-group
-              div.controls
-                button.btn(type = 'submit') Sign in      
-        p You are new here, do you need to 
-          a(href='users/new') <strong>sign up</strong>
-          |  for a #{title} account?
-        br
-        p.small
-          em Hint: try "Ironman" and "123456"
+	if(error != '')
+		p !{error}
+
+	div.container
+		form.form-signin(action = '/sessions/create', method = 'post')
+			h2.form-signin-heading Please log in:
+
+			//label(for = 'input_UserName') Your Username
+			input.form-control(name = 'username', type = 'text', placeholder = 'input username', required autofocus)
+
+			//label.form-control(for = 'input_Password') Password
+			input.form-control(name = 'password', type = 'password', placeholder = 'input password', required)
+
+			button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Sign in
+
+			button(class = 'btn btn-lg btn-primary btn-block', onclick = "window.location.href = 'users/new'") Sign up
+
+			br
+			p.small
+				em Hint: try "Thor" and "123456"
