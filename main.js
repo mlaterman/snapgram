@@ -4,15 +4,18 @@ var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
 var db = require('./db');
+//var routes = require('./routes')
 
 var app = express();
-
 app.use(express.cookieParser());
 app.use(express.session({
 	key : 'sid',
 	secret : 's3cr3t'
 })); //use session or cookieSession?
 app.use(express.bodyParser());
+app.set('view engine', 'jade');
+app.use(express.json());
+app.use(app.router)
 app.engine('jade', require('jade').__express);
 /*
  * Session variables:
@@ -261,8 +264,8 @@ app.get('/feed', function(req, res) {
  * Admin Requirement Functions
  */
 app.get('/bulk/clear', function(req, res) {
-	db.deleteDB();
-	db.createDB();
+	db.deleteTables();
+	db.createTables();
 });
 
 app.post('/bulk/users', function(req, res) {
@@ -387,5 +390,5 @@ function logOut(req, res) {
 		res.send();
 }
 
-db.createDB();//ensure there is a database
+db.createTables();//ensure there is a database
 app.listen(8500);//run the server
