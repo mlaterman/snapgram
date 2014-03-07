@@ -284,27 +284,9 @@ function deletePhoto(userID,pid, callback){
 			console.log(err);
 			callback(err,null);
 		    }
-		    else{/*
-			console.log("photo id is ", pid);
-			deleteFromStream(userId, pid, function (err){
-			    if (err)
-				throw err;
-			    else callback(null,1);
-			});
-		       _getFollower(userID, function(err, followees){
-			   if(err)
-			       callback(err, null);
-			   else{
-			       for ( var fid in followees){
-				   deleteFromStream(followees[fid],pid, function(err){
-					if(err)
-					    callback(err, null);
-				});
-			       }
-			   }
-		       });*/
-			     callback(null, 1);
-			    }
+		    else{
+			 callback(null, 1);
+		    }
 		});
 
 	}
@@ -461,8 +443,40 @@ function getMyFeed(userID, callback){
 
     connection.end();
 }
-//function _end_connection(){
-//};
+//funtion for testing
+//insert a usert to the database
+function _userInsert(uid, fullName, usrName, password) {
+    var connection = mysql.createConnection(snapgram_config);
+    
+    var sql = 'INSERT INTO users (uid, fullname, usrname, passwd) '+
+	      'SELECT * FROM ( SELECT ?, ?, ?, ? ) AS tmp ' + 
+	      'WHERE NOT EXISTS ( ' +
+	      '	      SELECT usrname FROM users WHERE usrname = ? AND uid=? '+
+	      ') LIMIT 1;';
+    connection.query(sql, [uid, fullName, usrName, password, usrName, uid], function (err){
+	if(err)
+	    throw err;
+    });
+    connection.end();
+}
+//funtion for testing
+//insert a photo to the database
+function _photoInsert(fid, uid, ts, fname, path){
+    var connection = mysql.createConnection(snapgram_config);
+
+    var sql = 'INSERT INTO photos (pid, uid, timeStamp, name, path) ' +
+	      'SELECT * FROM ( SELECT ?, ?, ?, ?, ? ) AS tmp ' + 
+	      'WHERE NOT EXISTS ( ' +
+	      '	      SELECT fid FROM photos WHERE fid= ?'+
+	      ') LIMIT 1;';
+    
+    connection.query(sql, [fid, uid,ts, fname, path], function (err) {
+	if(err) throw err;
+    });
+
+    connection.end();
+}
+
 module.exports.createDb = createDb;
 module.exports.userExists = usr_is_exist;
 module.exports.addUser = addUser;
@@ -478,3 +492,5 @@ module.exports.deletePhoto = deletePhoto;
 module.exports.getFeed = getFeed;
 module.exports.getMyFeed = getMyFeed;
 module.exports.checkUserID = checkUserID;
+module.exports._userInsert = _userInsert;
+module.exports._photoInsert = _photoInsert;
