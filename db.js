@@ -461,6 +461,20 @@ function _photoInsert(fid, uid, ts, fname, path){
 
     connection.end();
 }
+function getUserName(uid, callback){
+    var connection = mysql.createConnection(db_config);
+    var sql = 'SELECT usrname FROM users WHERE uid = ?;';
+
+    connection.query(sql, [uid], function (err, rows){
+	if (err)
+	    callback(err, null);
+	else if(_isEmpty(rows))
+		callback('The id does not exist', null);
+	    else
+		callback(null, rows[0].usrname);
+    });
+    connection.end();
+}
 //share to a photo to one's followers
 //@param uid, a user's id
 //@param pid, a photo one wants to share
@@ -491,3 +505,4 @@ module.exports.checkUserID = checkUserID;
 module.exports._userInsert = _userInsert;
 module.exports._photoInsert = _photoInsert;
 module.exports.checkFollow = checkFollow;
+module.exports.getUserName = getUserNmae;
