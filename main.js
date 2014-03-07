@@ -172,32 +172,38 @@ app.post('/photos/create', function(req, res) {
 		res.send();
 	} else {
 		var uid = req.session.userid;
-		var file = req.files.image;
+		var ufile = req.files.image;
 		util.log("MAKING NEW PHOTO of UID: "+uid);
-		db.addPhoto(uid, new Date(), file.name, function(err, pid) {
+		db.addPhoto(uid, new Date(), ufile.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
 			} else {//pid returned
-				var ext = (file.name).match(/\.[a-zA-Z]{1,4}$/);
+				var ext = (ufile.name).match(/\.[a-zA-Z]{1,4}$/);
 				if(ext == null) { //no extension
 					respond400('No extension found', res);
 				} else {
 					var path = './photos/'+pid+ext[0];
-					var fStream = fs.createReadStream(file.path);
-					fs.writeFile(path, fStream, function(fserr) {
-						if(fserr) {//file system error
-							db.deletePhoto(req.session.userid, pid, function(e){});
-							respond500('Filesystem Error Uploading Photo', res);
-						} else {
-							db.addPath(pid, path, function(val) {
-									if(val == 0) {//error updateing path on server
+					fs.readFile(ufile.path, function(rerr, data) {
+							if(rerr) {
+								db.deletePhoto(req.session.userid, pid, function(e){});
+								respond500('Filesystem Error Uploading Photo (Reading)', res);
+							} else {
+								fs.writeFile(path, data, function(fserr) {
+									if(fserr) {//file system error
 										db.deletePhoto(req.session.userid, pid, function(e){});
-										fs.unlink(path, function(e){});
+										respond500('Filesystem Error Uploading Photo (Writing)', res);
+									} else {
+										db.addPath(pid, path, function(val) {
+												if(val == 0) {//error updateing path on server
+													db.deletePhoto(req.session.userid, pid, function(e){});
+													fs.unlink(path, function(e){});
+												}
+										});
+										res.redirect('/feed');//file was uploaded
+										res.send();
 									}
-							});
-							res.redirect('/feed');//file was uploaded
-							res.send();
-						}
+								});
+							}
 					});
 				}
 			}
