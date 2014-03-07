@@ -17,6 +17,10 @@ TODO:
 		fix display glitches
 		
 Changelog:
+v 0.70
+	bugfixes
+	now supplying username to feed pages
+
 v 0.65
 	follow redirect routing fix
 

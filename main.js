@@ -119,7 +119,13 @@ app.get('/users/:id', function(req, res) {
 							isFollowing = isFollowing ? '2' : '0';
 						}
 						page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
-						res.render('feed', {preq : page.toString(), myPage : isFollowing, uid: id, images : photos});
+						db.getUserName(id, function(uErr, uname) {
+							if(uErr) {
+								util.log('Unable to get username for id: '+id);
+								uname = "???"
+							}
+							res.render('feed', {username : uname, preq : page.toString(), myPage : isFollowing, uid : id, images : photos});
+						});
 					});
 				}
 			});
@@ -249,7 +255,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 });
 /*
  * Optional Share Spec
- */ 
+ *
 app.get('/photos/:id.:ext/share', function(req, res) {
 	var id = req.params.id;
 	
@@ -260,7 +266,7 @@ app.get('/photos/:id.:ext/share', function(req, res) {
 			
 		}
 	});
-});
+});*/
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
@@ -274,7 +280,6 @@ app.get('/feed', function(req, res) {
 				var page = req.query.page;
 				var photos = photoQuery(page, rows);
 				page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
-				util.log("page: "+page.toString());
 				res.render('feed', {username : req.session.username, preq : page.toString(), myPage : '1', images : photos});
 			}
 		});
