@@ -8,9 +8,9 @@ TODO:
 	** deploy & test **
 	sharing (?)
 	JADE: new users form should have room for an error message variable called error
-	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's feed rendering
-	DB: need a way to see if a user is following another user (input {id, id}, output true/false)
-	DB: deletion and creation of database should work only on tables in the database, not the database by name
+	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's feed rendering  (Done)
+	DB: need a way to see if a user is following another user (input {id, id}, output true/false) (Done)
+	DB: deletion and creation of database should work only on tables in the database, not the database by name (Done)
 
 v 0.28
 bulk testing functions integrated
@@ -28,7 +28,7 @@ Login functionality added
 Started bulk requirements
 TODO:
 	DB: getFeed and getMyFeed need to return more attributes
-	DB: password hashing
+	DB: password hashing 
 	DB: bulk upload functions - insert user, insert into followd picture table
 	
 	JADE: new users form should have room for an error message variable called error
