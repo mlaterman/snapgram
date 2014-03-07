@@ -108,14 +108,16 @@ app.get('/users/:id', function(req, res) {
 				if(ferr) {
 					respond500('Database Failure', res);
 				} else {
-					var photos = photoQuery(req.query.page, rows);
+					var page = req.query.page;
+					var photos = photoQuery(page, rows);
 					db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
 						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
 							isFollowing = "Unable to resolve follow status";
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
 						}
-						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
+						page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
+						res.render('feed', {preq : page.toString(), myPage : isFollowing, uid: id, images : photos});
 					});
 				}
 			});
@@ -252,8 +254,11 @@ app.get('/feed', function(req, res) {
 			if(err) {
 				respond500('Error Reading Feed', res);
 			} else {
-				var photos = photoQuery(req.query.page, rows);
-				res.render('feed', {myPage : '1', images : photos});
+				var page = req.query.page;
+				var photos = photoQuery(page, rows);
+				page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
+				util.log("type of page "+typeof(page));
+				res.render('feed', {preq : page.toString(), myPage : '1', images : photos});
 			}
 		});
 	}

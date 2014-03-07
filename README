@@ -9,12 +9,12 @@ Unimplemented Features:
 	
 Untested Features
 	Bulk Uploads (users/streams)
-	Following/Unfollowing
-	feedpage with query string (need more than 30 images in a feed)
 	
 TODO:
 	Deploy and test
-		Fix feed to use thumbnails
+		Fix feed to use thumbnails - thumbnails should link to full images
+		Fix "more" button on feed/user streams
+		fix display glitches
 		
 Changelog:
 v 0.65
