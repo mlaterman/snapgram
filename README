@@ -5,14 +5,17 @@ Unimplemented Features:
 	
 Untested Features
 	Bulk Uploads (users/streams)
-	Feeds
 	Following/Unfollowing
-	viewing images
-
+	
 TODO:
 	Deploy and test
-	
+		Fix feed to use thumbnails
+		
 Changelog:
+v 0.55
+	image upload now uses util.pump
+	bootstap.css added, various jade improvements
+
 v 0.50
 	Following & Unfollowing should now appear on other user's feeds
 	css and image return types fixed
