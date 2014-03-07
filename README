@@ -1,111 +1,18 @@
 SENG 513 Team Project
 
+Unimplemented Features:
+	Sharing
+	
+Untested Features
+	Bulk Uploads (users/streams)
+	Feeds
+	Following/Unfollowing
+	viewing images
 
+TODO:
+	Deploy and test
+	
 Changelog:
-v 0.30
-Jade file changes
-TODO:
-	** deploy & test **
-	sharing (?)
-	JADE: new users form should have room for an error message variable called error
-	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's feed rendering
-	DB: need a way to see if a user is following another user (input {id, id}, output true/false)
-	DB: deletion and creation of database should work only on tables in the database, not the database by name
-
-v 0.28
-bulk testing functions integrated
-
-v 0.26
-db.js removed hardcoded links to 'snapgram' database
-
-v 0.25
-database bugs fixed
-	adduser altered
-	password encryption added
-
-v 0.17
-Login functionality added
-Started bulk requirements
-TODO:
-	DB: getFeed and getMyFeed need to return more attributes
-	DB: password hashing
-	DB: bulk upload functions - insert user, insert into followd picture table
-	
-	JADE: new users form should have room for an error message variable called error
-	JADE: follow and unfollow buttons on other's pages
-	JADE: feedpage should have a variable called images to create elements from
-	JADE: separate upload page (decouple from /feed)
-	JADE: upload file tag should be named image
-
-v 0.15
-Added querystring support for feed and user pages
-TODO:
-	bulk uploads
-	sharing
-	
-	DB: login function (the checkPassword function, done)
-	DB: getFeed and getMyFeed need to return more attributes
-	DB: password hashing (done)
-	
-	JADE: new users form should have room for an error message variable called error
-	JADE: follow and unfollow buttons on other's pages
-	JADE: feedpage should have a variable called images to create elements from
-	JADE: separate upload page (decouple from /feed)
-	JADE: upload file tag should be named image
-
-v 0.11
-Changed error responses to use jad templates
-added 404 and 400 templates to views
-
-v 0.10
-more database functionality
-	viewing user feeds, /feed (need verification)
-	following/unfollowing
-db.js some export names have changed to follow convention
-TODO:
-	Allow for query string to specify page views
-	bulk requirements
-	sharing
-	
-	DB: password hashing
-	DB: login function still needed
-	DB: verify usage of getFeed and getMyFeed in main.js
-	DB: verify separation of paths from returned rows
-	
-	JADE: recieve image paths and create requests
-	JADE: change name of file upload field to image
-
-v 0.06
-jade integration started
-TODO:
-	DB: hash passwords on store
-	DB: provide a  login function (uname+pass)->t/f
-	DB: follow/unfollow - need to be able to see is a user is already following another
-						  and if a user is not following another (unfollow is amended);
-	DB: need to be able to check if a user's ID exist (Done)s
-	DB: need function that returns all of a user's photos (Done)
-	DB: feed+function above should return path (Done)s
-	
-	JADE: error in signup form
-	JADE: need a form for other user's feeds
-	JADE: upload form?
-	
-	BACKEND: need more types of login failure messages?
-	BACKEND: how to deal with db info to pass to feed/stream
-	
-v 0.05
-database file export names changed
-started integrating db functionality with main.js
-
-v 0.04
-Jade basis added
-
-v 0.03
-database file added
-
-v 0.02
-main.js	session logic added
-		basic image serving added. TODO: recieve path from database
-v 0.01
-main.js contains routes outlined in project specification
-
+v 0.50
+	Following & Unfollowing should now appear on other user's feeds
+	css and image return types fixed

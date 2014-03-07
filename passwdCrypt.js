@@ -22,5 +22,6 @@ function decrypt(crypted){
 }
 
 
+
 module.exports.encrypt = encrypt;
 module.exports.decrypt = decrypt;
