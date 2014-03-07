@@ -12,6 +12,7 @@ app.use(express.session({
 	key : 'sid',
 	secret : 's3cr3t'
 })); //use session or cookieSession?
+app.use(express.bodyParser());
 app.engine('jade', require('jade').__express);
 /*
  * Session variables:
@@ -33,7 +34,7 @@ app.get('/users/new', function(req, res) { //return user signup form
 		res.render('sign_up', {error : "User Already Exists"});
 	}
 });
-//TODO: db - password hashing
+
 app.post('/users/create', function(req, res) { //create user from body info, logs in and redirects to feed
 	var uname = req.body.username;
 	var pass = req.body.password;
@@ -49,7 +50,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 				req.session.id = data;
 				res.redirect('/feed');
 				res.send();
-			} else if(data == -1) { //user already exists
+			} else if(data == 0) { //user already exists
 				req.session.lError = true;
 				res.redirect('/users/new');
 				res.send();
@@ -110,7 +111,7 @@ app.get('/users/:id', function(req, res) {
 					respond500('Database Failure', res);
 				} else {
 					var photos = photoQuery(req.query.page, rows);
-					res.render('feed', {images : photos});
+					res.render('feed', {myPage : '0', images : photos});
 				}
 			});
 		}
@@ -124,24 +125,26 @@ app.get('/sessions/new', function(req, res) { //return login form
 		res.render('login', {error : "Login Failed"});
 	}
 });
-//TODO: db - login function needed
+
 app.post('/sessions/create', function(req, res) { //logs user in, redirects to /feed, if unsucessful, redirect to /sessions/new with error
 	var uname = req.body.username;
 	var pass = req.body.password;
-	//TODO: getpassword or if_usr_exists?
-	//or a new method that return t/f
 	
-	if(querySuccess) {
-		req.session.valid = true;
-		req.session.lError = null;
-		req.session.id = //set user's id
-		res.redirect('/feed');
-		
-	} else {
-		req.session.lError = true;
-		res.redirect('/sessions/new');
-	}
-	res.send();
+	db.checkPassword(uname, pass, function(err, id) {
+			if(err) {
+				respond500('Database Failure', res);
+			} else if(id > 0) { //user found
+				req.session.valid = true;
+				req.session.lError = null;
+				req.session.id = id;
+				res.redirect('/feed');
+				res.send();
+			} else { //no user found
+				req.session.lError = true;
+				res.redirect('/sessions/new');
+				res.send();
+			}
+	});
 });
 //TODO: jade - separate upload page
 app.get('/photos/new', function(req, res) {
@@ -250,7 +253,7 @@ app.get('/feed', function(req, res) {
 				respond500('Error Reading Feed', res);
 			} else {
 				var photos = photoQuery(req.query.page, rows);
-				res.render('feed', {images : photos});
+				res.render('feed', {myPage : '1', images : photos});
 			}
 		});
 	}
@@ -263,13 +266,35 @@ app.get('/bulk/clear', function(req, res) {
 	db.deleteDB();
 	db.createDB();
 });
-//TODO: complete this
+//TODO: check db insert form
 app.post('/bulk/users', function(req, res) {
-	
+	var num = req.body.length;
+	var users = new Array()
+	for(var i = 0; i < num; i++) {
+		users.push(req.body[i]);
+		var id = req.body[i].id;
+		var name = req.body[i].name
+		var password = req.body[i].password;
+		db.insert(id,name,name,password);
+	}
+	users.forEach(function(user) {
+		var id = user.id;
+		var flist = user.follows;
+		flist.forEach(function(fid) {
+			db.follow(id, fid, function(e){});
+		});
+	});
 });
 //TODO: complete this
 app.post('/bulk/streams', function(req, res) {
-	
+	var num = req.body.length;
+	for(var i = 0; i < num; i++) {
+		var id = req.body[i].id;
+		var uid = req.body[i].user_id;
+		var path = req.body[i].path;
+		var ts = req.body[i].timestamp;
+		db.photoInsert(id, uid, ts, ts, path);
+	}
 });
 
 /*

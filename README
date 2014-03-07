@@ -2,6 +2,27 @@ SENG 513 Team Project
 
 
 Changelog:
+v 0.26
+db.js removed hardcoded links to 'snapgram' database
+
+v 0.25
+database bugs fixed
+	adduser altered
+	password encryption added
+
+v 0.17
+Login functionality added
+Started bulk requirements
+TODO:
+	DB: getFeed and getMyFeed need to return more attributes
+	DB: password hashing
+	DB: bulk upload functions - insert user, insert into followd picture table
+	
+	JADE: new users form should have room for an error message variable called error
+	JADE: follow and unfollow buttons on other's pages
+	JADE: feedpage should have a variable called images to create elements from
+	JADE: separate upload page (decouple from /feed)
+	JADE: upload file tag should be named image
 
 v 0.15
 Added querystring support for feed and user pages
@@ -9,9 +30,9 @@ TODO:
 	bulk uploads
 	sharing
 	
-	DB: login function
+	DB: login function (the checkPassword function, done)
 	DB: getFeed and getMyFeed need to return more attributes
-	DB: password hashing
+	DB: password hashing (done)
 	
 	JADE: new users form should have room for an error message variable called error
 	JADE: follow and unfollow buttons on other's pages
