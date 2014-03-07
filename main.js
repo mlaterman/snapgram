@@ -62,7 +62,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
-	
+	util.log(id);
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
@@ -80,7 +80,7 @@ app.get('/users/:id/follow', function(req, res) {
 
 app.get('/users/:id/unfollow', function(req, res) {
 	var id = req.params.id;
-	
+	util.log(id);
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
