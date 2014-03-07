@@ -39,7 +39,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 	var pass = req.body.password;
 	var fname = req.body.fullname;
 	
-	db.addUser(uname, fname, pass, Date.now(), function(err, data) {
+	db.addUser(uname, fname, pass, new Date(), function(err, data) {
 		if(err) {
 			respond500('Database Error', res);
 		} else {
@@ -168,7 +168,7 @@ app.post('/photos/create', function(req, res) {
 	} else {
 		var uid = req.session.userid;
 		var uFile = req.files.image;
-		db.addPhoto(uid, Date.now(), uFile.name, function(err, pid) {
+		db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
 			} else {//pid returned
@@ -292,7 +292,7 @@ app.post('/bulk/streams', function(req, res) {
 		var id = req.body[i].id;
 		var uid = req.body[i].user_id;
 		var path = req.body[i].path;
-		var ts = req.body[i].timestamp;
+		var ts = new Date(req.body[i].timestamp);
 		db._photoInsert(id, uid, ts, ts, path);
 	}
 });
