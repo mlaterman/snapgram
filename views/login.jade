@@ -11,25 +11,24 @@ block content
       div.span
         br 
         br 
-        form.form_style(action = '/sessions/create', method = 'post')
+        form.form-control(action = '/sessions/create', method = 'post')
           fieldset
             legend Log in!
-            if (message != '')
-              div.alert.alert-error
-                p !{message}
-            div.control_group
-              label.control_label(for = 'input_UserName') Your Username
+            if(error != '')
+                p !{error}
+            div.form-group
+              label.form-control(for = 'input_UserName') Your Username
               div.controls
                 input#input_UserName.input_style(name = 'username', type = 'text', placeholder = 'input username', required)
-            div.control_group
-              label.control_label(for = 'input_Password') Password
+            div.form-group
+              label.form-control(for = 'input_Password') Password
               div.controls
                 input#input_Password.input_style(name = 'password', type = 'password', placeholder = 'input password', required)
-            div.control_group
+            div.form-group
               div.controls
-                button.button_style(type = 'submit') Sign in      
+                button.btn(type = 'submit') Sign in      
         p You are new here, do you need to 
-          a(href='signup') <strong>sign up</strong>
+          a(href='users/new') <strong>sign up</strong>
           |  for a #{title} account?
         br
         p.small
