@@ -110,7 +110,7 @@ app.get('/users/:id', function(req, res) {
 				} else {
 					var photos = photoQuery(req.query.page, rows);
 					db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
-						if(folEerr) {//do not show follow or unfollow buttons if there is an error checking follows status
+						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
 							isFollowing = "Unable to resolve follow status";
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
