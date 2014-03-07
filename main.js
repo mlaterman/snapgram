@@ -15,7 +15,7 @@ app.use(express.session({
 app.use(express.bodyParser());//bodyParser includes express.json
 app.set('view engine', 'jade');
 app.use(app.router)
-app.engine('jade', require('jade').__express);
+//app.engine('jade', require('jade').__express);
 /*
  * Session variables:
  * valid - end user is logged in
@@ -47,7 +47,6 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 			if(data > 0) { //creation successful; set user id to data
 				req.session.valid = true;
 				req.session.lError = null;
-				util.log("C-ASSIGNED ID: "+data);
 				req.session.userid = data;
 				res.redirect('/feed');
 				res.send();
@@ -106,15 +105,14 @@ app.get('/users/:id', function(req, res) {
 		} else if(!val) {
 			respond404('User id: '+id+' not found', res);
 		} else {
-			util.log("SENT ID: "+id);
-			db.getMyFeed(id, function(err, rows) {
-				if(err) {
+			db.getMyFeed(id, function(ferr, rows) {
+				if(ferr) {
 					respond500('Database Failure', res);
 				} else {
 					var photos = photoQuery(req.query.page, rows);
-					db.checkFollow(req.session.userid, id, function(err, isFollowing) {
-						if(err) {//do not show follow or unfollow buttons if there is an error checking follows status
-							isFollowing = err;
+					db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
+						if(folEerr) {//do not show follow or unfollow buttons if there is an error checking follows status
+							isFollowing = folEerr;
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
 						}
@@ -144,9 +142,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			} else if(id > 0) { //user found
 				req.session.valid = true;
 				req.session.lError = null;
-				util.log("DATABASE RETURNED ID: "+id);
 				req.session.userid = id;
-				util.log("L-ASSIGNED ID: "+req.session.userid);
 				res.redirect('/feed');
 				res.send();
 			} else { //no user found
@@ -168,22 +164,21 @@ app.get('/photos/new', function(req, res) {
 
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
-		res.redirect('/sessions/new')
+		res.redirect('/sessions/new');
 		res.send();
 	} else {
 		var uid = req.session.userid;
-		var ufile = req.files.image;
-		util.log("MAKING NEW PHOTO of UID: "+uid);
-		db.addPhoto(uid, new Date(), ufile.name, function(err, pid) {
+		var uFile = req.files.image;
+		db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
 			} else {//pid returned
-				var ext = (ufile.name).match(/\.[a-zA-Z]{1,4}$/);
+				var ext = (uFile.name).match(/\.[a-zA-Z]{1,4}$/);
 				if(ext == null) { //no extension
 					respond400('No extension found', res);
 				} else {
 					var path = './photos/'+pid+ext[0];
-					var fStream = fs.createReadStream(ufile.path);
+					var fStream = fs.createReadStream(uFile.path);
 					var oStream = fs.createWriteStream(path);
 					util.pump(fStream, oStream, function(ferr) {
 						if(ferr) { //error transerring from fStream to oStream
@@ -201,28 +196,6 @@ app.post('/photos/create', function(req, res) {
 							res.send();
 						}
 					});
-					/*fs.readFile(ufile.path, function(rerr, data) {
-							if(rerr) {
-								db.deletePhoto(req.session.userid, pid, function(e){});
-								respond500('Filesystem Error Uploading Photo (Reading)', res);
-							} else {
-								fs.writeFile(path, data, function(fserr) {
-									if(fserr) {//file system error
-										db.deletePhoto(req.session.userid, pid, function(e){});
-										respond500('Filesystem Error Uploading Photo (Writing)', res);
-									} else {
-										db.addPath(pid, path, function(val) {
-												if(val == 0) {//error updateing path on server
-													db.deletePhoto(req.session.userid, pid, function(e){});
-													fs.unlink(path, function(e){});
-												}
-										});
-										res.redirect('/feed');//file was uploaded
-										res.send();
-									}
-								});
-							}
-					});*/
 				}
 			}
 		});
@@ -239,8 +212,8 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 		} else {
 			res.status(200);
 			res.set('Content-Type', 'image/'+ext);
-			gm(path).resize(400).stream(function (err, stdout, stderr) {
-				if(err) {
+			gm(path).resize(400).stream(function (serr, stdout, stderr) {
+				if(serr) {
 					util.log('Resizing Error');
 				} else {
 					stdout.pipe(res);
@@ -260,8 +233,8 @@ app.get('/photos/:id.:ext', function(req, res) {
 		} else {
 			res.status(200);
 			res.set('Content-Type', 'image/'+ext);
-			gm(path).stream(function (err, stdout, stderr) {
-				if (err) {
+			gm(path).stream(function (serr, stdout, stderr) {
+				if (serr) {
 					util.log('Photo Streaming Error');
 				} else {
 					stdout.pipe(res);
@@ -276,7 +249,6 @@ app.get('/feed', function(req, res) {
 		res.redirect('/sessions/new');
 		res.send();
 	} else {
-		util.log("SENT MY ID: "+req.session.userid);
 		db.getFeed(req.session.userid, function(err, rows) {
 			if (err) {
 				respond500('Error Reading Feed', res);
