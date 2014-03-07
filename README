@@ -2,15 +2,37 @@ SENG 513 Team Project
 
 
 Changelog:
+v 0.40
+response css types changed
+	added routing for stylesheets/text.css
+image response types changed
+	both images stream with gm
+	express methods used for setting status codes and headers
+new table creation/deletion methods reflected in main.js
+
+TODO:
+	**deploy & testing**
+	sharing (?)
+	JADE: new users form should have room for an error message variable
+		called error
+	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's
+		feed rendering
+	DB: need a way to see if a user is following another user
+		(input {id, id}, output true/false)
+
 v 0.30
 Jade file changes
 TODO:
 	** deploy & test **
 	sharing (?)
-	JADE: new users form should have room for an error message variable called error
-	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's feed rendering
-	DB: need a way to see if a user is following another user (input {id, id}, output true/false)
-	DB: deletion and creation of database should work only on tables in the database, not the database by name
+	JADE: new users form should have room for an error message variable
+		called error
+	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's
+		feed rendering
+	DB: need a way to see if a user is following another user
+		(input {id, id}, output true/false)
+	DB: deletion and creation of database should work only on tables in
+		the database, not the database by name
 
 v 0.28
 bulk testing functions integrated
@@ -29,11 +51,14 @@ Started bulk requirements
 TODO:
 	DB: getFeed and getMyFeed need to return more attributes
 	DB: password hashing
-	DB: bulk upload functions - insert user, insert into followd picture table
+	DB: bulk upload functions - insert user, insert into followd picture
+		table
 	
-	JADE: new users form should have room for an error message variable called error
+	JADE: new users form should have room for an error message variable
+		called error
 	JADE: follow and unfollow buttons on other's pages
-	JADE: feedpage should have a variable called images to create elements from
+	JADE: feedpage should have a variable called images to create
+		elements from
 	JADE: separate upload page (decouple from /feed)
 	JADE: upload file tag should be named image
 
@@ -47,9 +72,11 @@ TODO:
 	DB: getFeed and getMyFeed need to return more attributes
 	DB: password hashing (done)
 	
-	JADE: new users form should have room for an error message variable called error
+	JADE: new users form should have room for an error message variable
+		called error
 	JADE: follow and unfollow buttons on other's pages
-	JADE: feedpage should have a variable called images to create elements from
+	JADE: feedpage should have a variable called images to create
+		elements from
 	JADE: separate upload page (decouple from /feed)
 	JADE: upload file tag should be named image
 
@@ -80,8 +107,9 @@ jade integration started
 TODO:
 	DB: hash passwords on store
 	DB: provide a  login function (uname+pass)->t/f
-	DB: follow/unfollow - need to be able to see is a user is already following another
-						  and if a user is not following another (unfollow is amended);
+	DB: follow/unfollow - need to be able to see is a user is already
+		following another and if a user is not following another
+		(unfollow is amended);
 	DB: need to be able to check if a user's ID exist (Done)s
 	DB: need function that returns all of a user's photos (Done)
 	DB: feed+function above should return path (Done)s

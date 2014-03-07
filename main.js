@@ -200,9 +200,8 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 		if(err) {
 			respond404('Photo not found', res);
 		} else {
-			res.writeHead(200, {
-				'Content-Type' : 'image/'+ext
-			});
+			res.status(200);
+			res.set('Content-Type', 'image/'+ext);
 			gm(path).resize(400).stream(function (err, stdout, stderr) {
 				if(err) {
 					util.log('Resizing Error');
@@ -222,21 +221,15 @@ app.get('/photos/:id.:ext', function(req, res) {
 		if(err) {
 			respond404('Photo not found', res);
 		} else {
-			res.sendFile(path, function(ferr) {
-					if(ferr) {
-						respond500('File Failure', res);
-					}
-			});
-			/*res.writeHead(200, {
-				'Content-Type' : 'image/'+ext
-			});
+			res.status(200);
+			res.set('Content-Type', 'image/'+ext);
 			gm(path).stream(function (err, stdout, stderr) {
 				if (err) {
 					util.log('Photo Streaming Error');
 				} else {
 					stdout.pipe(res);
 				}
-			});*/
+			});
 		}
 	});
 });
@@ -261,8 +254,8 @@ app.get('/feed', function(req, res) {
  * Admin Requirement Functions
  */
 app.get('/bulk/clear', function(req, res) {
-	db.deleteDB();
-	db.createDB();
+	db.deleteTables();
+	db.createTables();
 });
 
 app.post('/bulk/users', function(req, res) {
@@ -300,11 +293,18 @@ app.post('/bulk/streams', function(req, res) {
  * eg: css, scripts, ...
  */
 app.get('/stylesheets/style.css', function(req, res){
+	res.set('Content-Type', 'text/css');
 	res.sendFile('./stylesheets/style.css');
 });
 
 app.get('/stylesheets/image.css', function(req, res){
+	res.set('Content-Type', 'text/css');
 	res.sendFile('./stylesheets/image.css');
+});
+
+app.get('/stylesheets/text.css', function(req, res){
+	res.set('Content-Type', 'text/css');
+	res.sendFile('./stylesheets/text.css');
 });
 
 /*
@@ -387,5 +387,5 @@ function logOut(req, res) {
 		res.send();
 }
 
-db.createDB();//ensure there is a database
+db.createTables();//ensure there is a database
 app.listen(8500);//run the server
