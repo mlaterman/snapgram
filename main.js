@@ -113,7 +113,6 @@ app.get('/users/:id', function(req, res) {
 						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
 							isFollowing = "Unable to resolve follow status";
 						} else {//set isFollowing to proper string
-							util.log(isFollowing);
 							isFollowing = isFollowing ? '2' : '0';
 						}
 						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
@@ -349,7 +348,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('*', function(req, res) { //unknown path
-	respond404('Unknown Path', res);
+	respond404('Unknown Path: '+req.path, res);
 });
 
 /*
