@@ -23,14 +23,14 @@ var snapgram_config = {
 var createDb = function () {
     var connection = mysql.createConnection(db_config);
     // create a database called snapgram to store infos.
-    connection.query('CREATE DATABASE IF NOT EXISTS snapgram', function (err){
+    connection.query('CREATE DATABASE IF NOT EXISTS '+snapgram_config.database, function (err){
 	if(err) {
-	    console.log('unable to create the database snapgram');
+	    console.log('unable to create the database '+snapgram_config.database);
 	    console.log(err);
 	}
     });
      // use the created database
-    connection.query('USE snapgram', function (err){
+    connection.query('USE '+snapgram_config.database, function (err){
 	if (err)
 	    throw err;
     })
@@ -95,7 +95,7 @@ var createDb = function () {
  // to delete a database 
 var deleteDb = function(){
     var connection = mysql.createConnection(snapgram_config);
-    connection.query("drop database if exists snapgram", function(err, results){
+    connection.query("drop database if exists "+snapgram_config.database, function(err, results){
        if(err) 
 	console.log(err);
    }); 
