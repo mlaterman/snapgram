@@ -144,7 +144,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			} else if(id > 0) { //user found
 				req.session.valid = true;
 				req.session.lError = null;
-				util.log("L-ASSIGNED ID: "+data);
+				util.log("L-ASSIGNED ID: "+id);
 				req.session.id = id;
 				res.redirect('/feed');
 				res.send();
