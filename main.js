@@ -113,6 +113,7 @@ app.get('/users/:id', function(req, res) {
 						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
 							isFollowing = "Unable to resolve follow status";
 						} else {//set isFollowing to proper string
+							util.log(isFollowing);
 							isFollowing = isFollowing ? '2' : '0';
 						}
 						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
