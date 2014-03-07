@@ -62,7 +62,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
-	util.log(id);
+	
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
@@ -71,7 +71,7 @@ app.get('/users/:id/follow', function(req, res) {
 			if(err) { 
 				respond500('Failed to follow user id: '+id, res);//assume DB failure
 			} else { // success
-				res.redirect('/users/'+id);
+				res.redirect('/users/'+id.slice(1));
 				res.send();
 			}
 		});
@@ -80,7 +80,7 @@ app.get('/users/:id/follow', function(req, res) {
 
 app.get('/users/:id/unfollow', function(req, res) {
 	var id = req.params.id;
-	util.log(id);
+	
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
@@ -89,7 +89,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 				if(err) {
 					respond500('Failed to unfollow user id: '+id, res);
 				} else {
-					res.redirect('/users/'+id);
+					res.redirect('/users/'+id.slice(1));
 					res.send();
 				}
 		});
