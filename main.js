@@ -38,7 +38,7 @@ app.get('/users/new', function(req, res) { //return user signup form
 app.post('/users/create', function(req, res) { //create user from body info, logs in and redirects to feed
 	var uname = req.body.username;
 	var pass = req.body.password;
-	var fname = req.body.fullName;
+	var fname = req.body.fullname;
 	
 	db.addUser(uname, fname, pass, new Date(), function(err, data) {
 		if(err) {
