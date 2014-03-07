@@ -302,27 +302,27 @@ app.post('/bulk/streams', function(req, res) {
  * eg: css, scripts, ...
  */
  app.get('/js/bootstrap.js', function(req, res) {
-	 res.sendfile('./js/bootstrap.js');
+	 res.sendfile('./public/js/bootstrap.js');
 });
 
  app.get('/js/jquery-2.1.0.js', function(req, res) {
-	 res.sendfile('./js/jquery-2.1.0.js');
+	 res.sendfile('./public/js/jquery-2.1.0.js');
 });
  
 app.get('/stylesheets/style.css', function(req, res) {
-	res.sendfile('./stylesheets/style.css');
+	res.sendfile('./public/stylesheets/style.css');
 });
 
 app.get('/stylesheets/image.css', function(req, res) {
-	res.sendfile('./stylesheets/image.css');
+	res.sendfile('./public/stylesheets/image.css');
 });
 
 app.get('/stylesheets/text.css', function(req, res) {
-	res.sendfile('./stylesheets/text.css');
+	res.sendfile('./public/stylesheets/text.css');
 });
 
 app.get('/stylesheets/bootstrap.css', function(req, res) {
-	res.sendfile('./stylesheets/boots.css');
+	res.sendfile('./public/stylesheets/boots.css');
 });
 
 app.get('/logout', function (req, res) {
