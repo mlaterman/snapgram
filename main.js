@@ -344,14 +344,14 @@ function photoQuery(page, rows) {
 			return photoQuery(page-1, rows);
 		} else {
 			var end = start+30 < rows.length ? start+30 : rows.length;
-			return rows.slice(start, end);
+			return JSON.stringify(rows.slice(start, end));
 		}
 	}	
 }
 //By default get upto the first 30 objects
 function _photosQueryDefault(rows) {
 	var end = 30 < rows.length ? 30 : rows.length;
-	return rows.slice(0, end);
+	return JSON.stringify(rows.slice(0, end));
 }
 //Not used
 function logOut(req, res) {

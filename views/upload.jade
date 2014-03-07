@@ -1,4 +1,4 @@
-extents layout
+extends layout
 
 block title
 
@@ -6,4 +6,11 @@ block title
 
 block content
 
-	
+	P
+		strong Please upload your picture :
+
+	form.form_style(action = '/photos/create', method = 'POST', enctype = 'multipart/form-data')
+		div.control_group
+			div.controls
+				input(type = 'file', name = 'image', value = 'Choose file')
+				button.botton_style(type = 'submit') Upload photos
