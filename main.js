@@ -115,6 +115,7 @@ app.get('/users/:id', function(req, res) {
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
 						}
+						util.log("myPage="+isFollowing);
 						res.render('feed', {myPage : isFollowing, uid: id, images : photos});
 					});
 				}
