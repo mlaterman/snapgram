@@ -183,7 +183,7 @@ app.post('/photos/create', function(req, res) {
 					respond400('No extension found', res);
 				} else {
 					var path = './photos/'+pid+ext[0];
-					fs.writeFile(path, file, function(fserr) {
+					fs.writeFile(path, file.path, function(fserr) {
 						if(fserr) {//file system error
 							db.deletePhoto(req.session.userid, pid, function(e){});
 							respond500('Filesystem Error Uploading Photo', res);
