@@ -2,6 +2,11 @@ SENG 513 Team Project
 
 
 Changelog:
+v 0.25
+database bugs fixed
+	adduser altered
+	password encryption added
+
 v 0.17
 Login functionality added
 Started bulk requirements
