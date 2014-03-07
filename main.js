@@ -118,7 +118,7 @@ app.get('/users/:id', function(req, res) {
 						} else {//set isFollowing to proper string
 							isFollowing = isFollowing ? '2' : '0';
 						}
-						page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
+						page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1;
 						db.getUserName(id, function(uErr, uname) {
 							if(uErr) {
 								util.log('Unable to get username for id: '+id);
@@ -279,7 +279,7 @@ app.get('/feed', function(req, res) {
 			} else {
 				var page = req.query.page;
 				var photos = photoQuery(page, rows);
-				page = (page == null || page < 2 || isNaN(page)) ? 2 : page + 1;
+				page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1;
 				res.render('feed', {username : req.session.username, preq : page.toString(), myPage : '1', images : photos});
 			}
 		});
