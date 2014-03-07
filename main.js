@@ -58,7 +58,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 		}
 	});
 });
-//TODO: jade - follow/unfollow buttons
+
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
 	
@@ -96,7 +96,6 @@ app.get('/users/:id/unfollow', function(req, res) {
 });
 //TODO: db - getMyFeed needs to return more attributes
 //		db - need a function to check if a user is following another user (return true or false)
-//		jade - varaible name should be set to images
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
 	db.checkUserID(id, function(err, val) {
@@ -145,7 +144,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			}
 	});
 });
-//TODO: jade - separate upload page
+
 app.get('/photos/new', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
@@ -154,7 +153,7 @@ app.get('/photos/new', function(req, res) {
 		res.render('upload', {});
 	}
 });
-//TODO: jade - ensure image field is called image
+
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
@@ -242,7 +241,6 @@ app.get('/photos/:id.:ext', function(req, res) {
 	});
 });
 //TODO: db - getFeed needs to return more attributes
-//		jade varaible name should be set to images
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');

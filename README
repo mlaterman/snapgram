@@ -2,6 +2,16 @@ SENG 513 Team Project
 
 
 Changelog:
+v 0.30
+Jade file changes
+TODO:
+	** deploy & test **
+	sharing (?)
+	JADE: new users form should have room for an error message variable called error
+	DB+JADE: getFeed & getMyFeed need to return attributes for Jade's feed rendering
+	DB: need a way to see if a user is following another user (input {id, id}, output true/false)
+	DB: deletion and creation of database should work only on tables in the database, not the database by name
+
 v 0.28
 bulk testing functions integrated
 
