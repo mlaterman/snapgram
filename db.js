@@ -463,7 +463,7 @@ function _photoInsert(fid, uid, ts, fname, path){
 }
 
 module.exports.createTables = createTables;
-module.exports.userExists = usr_is_exist;
+module.exports.usr_is_exist = usr_is_exist;
 module.exports.addUser = addUser;
 module.exports.deleteTables = deleteTables;
 module.exports.getPassword = getPassword;
