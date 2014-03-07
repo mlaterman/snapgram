@@ -234,7 +234,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 			res.status(200);
 			res.set('Content-Type', 'image/'+ext);
 			gm(path).stream(function (serr, stdout, stderr) {
-				if (serr) {
+				if(serr) {
 					util.log('Photo Streaming Error');
 				} else {
 					stdout.pipe(res);
@@ -250,7 +250,7 @@ app.get('/feed', function(req, res) {
 		res.send();
 	} else {
 		db.getFeed(req.session.userid, function(err, rows) {
-			if (err) {
+			if(err) {
 				respond500('Error Reading Feed', res);
 			} else {
 				var photos = photoQuery(req.query.page, rows);
@@ -282,7 +282,7 @@ app.post('/bulk/users', function(req, res) {
 		var id = user.id;
 		var flist = user.follows;
 		flist.forEach(function(fid) {
-			db.follow(id, fid, function(e){});
+			db.follow(id, fid, function(e) {});
 		});
 	});
 });
@@ -302,25 +302,32 @@ app.post('/bulk/streams', function(req, res) {
  * Register other requests
  * eg: css, scripts, ...
  */
-app.get('/stylesheets/style.css', function(req, res){
-	//res.set('Content-Type', 'text/css');
+app.get('/stylesheets/style.css', function(req, res) {
 	res.sendfile('./stylesheets/style.css');
 });
 
-app.get('/stylesheets/image.css', function(req, res){
-	//res.set('Content-Type', 'text/css');
+app.get('/stylesheets/image.css', function(req, res) {
 	res.sendfile('./stylesheets/image.css');
 });
 
-app.get('/stylesheets/text.css', function(req, res){
-	//res.set('Content-Type', 'text/css');
+app.get('/stylesheets/text.css', function(req, res) {
 	res.sendfile('./stylesheets/text.css');
 });
 
-app.get('/stylesheets/bootstrap.css', function(req, res){
-	//res.set('Content-Type', 'text/css');
+app.get('/stylesheets/bootstrap.css', function(req, res) {
 	res.sendfile('./stylesheets/boots.css');
 });
+
+app.get('/logout', function (req, res) {
+	req.session.destroy(function(err) { //to log out of cookie sessions
+		if(err) {						//set them to null
+			util.log('Error Destroying Session');
+		}
+	});
+	res.redirect('/sessions/new');
+	res.send();
+});
+
 /*
  * Homepage catch
  */
@@ -391,16 +398,6 @@ function photoQuery(page, rows) {
 function _photosQueryDefault(rows) {
 	var end = 30 < rows.length ? 30 : rows.length;
 	return JSON.stringify(rows.slice(0, end));
-}
-//Not used
-function logOut(req, res) {
-		req.session.destroy(function(err) { //to log out of cookie sessions
-			if(err) {						//set them to null
-				util.log('Error Destroying Session');
-			}
-		});
-		res.redirect('/sessions/new');
-		res.send();
 }
 
 db.createTables();//ensure there is a database
