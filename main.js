@@ -302,6 +302,14 @@ app.post('/bulk/streams', function(req, res) {
  * Register other requests
  * eg: css, scripts, ...
  */
+ app.get('/js/bootstrap.js', function(req, res) {
+	 res.sendfile('./js/bootstrap.js');
+});
+
+ app.get('/js/jquery-2.1.0.js', function(req, res) {
+	 res.sendfile('./js/jquery-2.1.0.js');
+});
+ 
 app.get('/stylesheets/style.css', function(req, res) {
 	res.sendfile('./stylesheets/style.css');
 });
