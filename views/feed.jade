@@ -8,13 +8,39 @@ block content
 
 	h1 Photos
 	
+	if myPage == '0'
+		form.form_style(action = '/users/:' + uid + '/follow', method = 'GET')
+			button.botton_style(type = 'submit') Follow
+	else if myPage == '2'
+		form.form_style(action = '/users/:' + uid + '/unfollow', method = 'GET')
+			button.botton_style(type = 'submit') Unfollow
+	
+	- var photos_array = JSON.parse(images);
+	//- console.log(images)
+	- for(var i = 0; i < photos_array.length ; i ++)
+		- {
+			//- console.log(photos_array.length);
+			- for(var item in photos_array[i])
+				- if(item === 'address')
+					- {
+						//- console.log(photos_array[i][item]);
+						div.image
+							img(src = photos_array[i][item])
+					- }
+				- else if(item === 'name')
+					- {
+						//- console.log(photos_array[i][item]);
+						div.desc
+							#{photos_array[i][item]}
+					- }
+				- else if(item === 'time')
+					- {
+						div.desc
+							#{photos_array[i][item]}
+					- }
+		- }
+
 	form.form_style(action = '/feed', method = 'GET')
 		div.control_group
 			div.controls
-				button.botton_style(type = 'submit', name='page', value='2') More
-
-	form.form_style(action = '/photos/create', method = 'POST', enctype = 'multipart/form-data')
-		div.control_group
-			div.controls
-				input(type = 'file', name = 'upload', value = 'Choose file')
-				button.botton_style(type = 'submit') Upload photos
+				button.botton_style(type = 'submit', name='page', value='more') More

@@ -21,8 +21,6 @@ app.engine('jade', require('jade').__express);
  * id - user's id number
  */
  
- var pDir = './photos/'; //base path to image directory
-
 /*
  * Requests needed for basic functionality
  */
@@ -60,7 +58,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 		}
 	});
 });
-//TODO: jade - follow/unfollow buttons
+
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
 	
@@ -97,7 +95,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 	}
 });
 //TODO: db - getMyFeed needs to return more attributes
-//		jade - varaible name should be set to images
+//		db - need a function to check if a user is following another user (return true or false)
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
 	db.checkUserID(id, function(err, val) {
@@ -111,7 +109,7 @@ app.get('/users/:id', function(req, res) {
 					respond500('Database Failure', res);
 				} else {
 					var photos = photoQuery(req.query.page, rows);
-					res.render('feed', {myPage : '0', images : photos});
+					res.render('feed', {myPage : '0', uid: id, images : photos});
 				}
 			});
 		}
@@ -146,7 +144,7 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 			}
 	});
 });
-//TODO: jade - separate upload page
+
 app.get('/photos/new', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
@@ -155,7 +153,7 @@ app.get('/photos/new', function(req, res) {
 		res.render('upload', {});
 	}
 });
-//TODO: jade - ensure image field is called image
+
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
@@ -167,20 +165,21 @@ app.post('/photos/create', function(req, res) {
 		db.addPhoto(uid, new Date(), file.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
-			} else {
+			} else {//pid returned
 				var ext = (file.name).match(/\.[a-zA-Z]{1,4}$/);
 				if(ext == null) { //no extension
 					respond400('No extension found', res);
 				} else {
-					fs.writeFile(pDir+pid+ext[0], file, function(fserr) {
-						if(fserr) {
+					var path = './photos/'+pid+ext[0];
+					fs.writeFile(path, file, function(fserr) {
+						if(fserr) {//file system error
 							db.deletePhoto(req.session.id, pid, function(e){});
 							respond500('Filesystem Error Uploading Photo', res);
 						} else {
-							db.addPath(pid, pDir+pid+'.png', function(val) {
-									if(val == 0) {
+							db.addPath(pid, path, function(val) {
+									if(val == 0) {//error updateing path on server
 										db.deletePhoto(req.session.id, pid, function(e){});
-										fs.unlink(pDir+pid+ext[0], function(e){});
+										fs.unlink(path, function(e){});
 									}
 							});
 							res.redirect('/feed');//file was uploaded
@@ -242,7 +241,6 @@ app.get('/photos/:id.:ext', function(req, res) {
 	});
 });
 //TODO: db - getFeed needs to return more attributes
-//		jade varaible name should be set to images
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
@@ -266,7 +264,7 @@ app.get('/bulk/clear', function(req, res) {
 	db.deleteDB();
 	db.createDB();
 });
-//TODO: check db insert form
+
 app.post('/bulk/users', function(req, res) {
 	var num = req.body.length;
 	var users = new Array()
@@ -275,7 +273,7 @@ app.post('/bulk/users', function(req, res) {
 		var id = req.body[i].id;
 		var name = req.body[i].name
 		var password = req.body[i].password;
-		db.insert(id,name,name,password);
+		db._userInsert(id,name,name,password);
 	}
 	users.forEach(function(user) {
 		var id = user.id;
@@ -285,7 +283,7 @@ app.post('/bulk/users', function(req, res) {
 		});
 	});
 });
-//TODO: complete this
+
 app.post('/bulk/streams', function(req, res) {
 	var num = req.body.length;
 	for(var i = 0; i < num; i++) {
@@ -293,7 +291,7 @@ app.post('/bulk/streams', function(req, res) {
 		var uid = req.body[i].user_id;
 		var path = req.body[i].path;
 		var ts = req.body[i].timestamp;
-		db.photoInsert(id, uid, ts, ts, path);
+		db._photoInsert(id, uid, ts, ts, path);
 	}
 });
 
@@ -369,14 +367,14 @@ function photoQuery(page, rows) {
 			return photoQuery(page-1, rows);
 		} else {
 			var end = start+30 < rows.length ? start+30 : rows.length;
-			return rows.slice(start, end);
+			return JSON.stringify(rows.slice(start, end));
 		}
 	}	
 }
 //By default get upto the first 30 objects
 function _photosQueryDefault(rows) {
 	var end = 30 < rows.length ? 30 : rows.length;
-	return rows.slice(0, end);
+	return JSON.stringify(rows.slice(0, end));
 }
 //Not used
 function logOut(req, res) {
