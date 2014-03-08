@@ -3,39 +3,18 @@ SENG 513 Team Project
 Extras:
 	Logout option added (GET /logout), redirects to login page after
 		destroying session
+	serving request: get /favicon.ico
 
 Unimplemented Features:
 	Sharing
 	
-Untested Features
-	Bulk Uploads (users/streams)
+Untested Features:
+	Bulk Uploads - users/streams(clear is tested)
+		password requirement ignored for simplicity
+		
+NOTE:
+	web2.cpsc database failures were experianced earlier in testing day
 	
 TODO:
 	Deploy and test
 		Fix feed to use thumbnails - thumbnails should link to full images
-		Fix "more" button on feed/user streams
-		fix display glitches
-		
-Changelog:
-v 0.70
-	bugfixes
-	now supplying username to feed pages
-
-v 0.65
-	follow redirect routing fix
-
-v 0.60
-	Various fixes
-
-v 0.57
-	Date passing now passes numeric UTC value	
-	main.js code cleanup
-	logout added
-	
-v 0.55
-	image upload now uses util.pump
-	bootstap.css added, various jade improvements
-
-v 0.50
-	Following & Unfollowing should now appear on other user's feeds
-	css and image return types fixed
