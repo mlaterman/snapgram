@@ -21,7 +21,8 @@ block content
 
 			button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Sign in
 
-			button(class = 'btn btn-lg btn-primary btn-block', onclick = "window.location.href = '/users/new'") Sign up
+		form.form-signin(action = '/users/new', method = 'GET')
+			button(class = 'btn btn-lg btn-primary btn-block', type = 'submit') Sign up
 
 			br
 			p.small
