@@ -25,25 +25,34 @@ block content
 			- for(var i = 0; i < photos_array.length ; i ++)
 				- {
 					//- console.log(photos_array.length);
+					- var address = '';
+					- var name = '';
+					- var time = '';
+					- var name_share = '';
 					- for(var item in photos_array[i])
 						- if(item === 'path')
 							- {
 								//- console.log(photos_array[i][item], photos_array[i][item].length);
-								- var address = photos_array[i][item].slice(1,photos_array[i][item].length-1);
-								div.col-xs-4
-									div.thumbnail
-										img(src = address)
+								- address = photos_array[i][item].slice(1,photos_array[i][item].length);
+								- name_share = '/share' + address;
+								- console.log(name_share);
 							- }
 						- else if(item === 'name')
 							- {
 								//- console.log(photos_array[i][item]);
-										div.caption
-											h3 #{photos_array[i][item]}
+								- name = photos_array[i][item];
 							- }
 						- else if(item === 'time')
 							- {
-											p #{photos_array[i][item]}
+								- time = photos_array[i][item];
 							- }
+						div.col-xs-4
+							div.thumbnail
+								img(src = address)
+								div.caption
+									h3 #{name}
+									p #{time}
+									a(href = name_share, class = "btn btn-default", role = "button") Share
 				- }
 
 		form.form-signin(action = '/feed', method = 'GET')
