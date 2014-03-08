@@ -365,6 +365,10 @@ app.get('/logout', function (req, res) {
 	res.send();
 });
 
+app.get('/favicon.ico', function (req, res) {
+	res.sendfile('./photos/favicon.ico');
+})
+
 /*
  * Homepage catch
  */
