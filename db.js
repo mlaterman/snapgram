@@ -509,4 +509,8 @@ module.exports.checkUserID = checkUserID;
 module.exports._userInsert = _userInsert;
 module.exports._photoInsert = _photoInsert;
 module.exports.checkFollow = checkFollow;
+<<<<<<< HEAD
 //module.exports.getUserName = getUserNmae;
+=======
+module.exports.getUserName = getUserName;
+>>>>>>> e8558ec64ddf3c54b159bb66f3c2cfb95279ac51
