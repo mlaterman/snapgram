@@ -14,7 +14,8 @@ Untested Features:
 		ignored for simplicity
 		
 Note:
-	web2.cpsc database failures were experianced earlier in testing day
+	web2.cpsc database failures were experianced earlier in submission day
+	minor UI glitch on upload page
 
 Packages:
 	express
