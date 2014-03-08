@@ -6,50 +6,48 @@ block title
 
 block content
 
-	h1 Photos
+	div.container
+		h1.form-signin-heading #{username}'s gallery
 
-	if myPage == '0'
-		form.form_style(action = '/users/' + uid + '/follow', method = 'GET')
-			button.botton_style(type = 'submit') Follow
-	else if myPage == '2'
-		form.form_style(action = '/users/' + uid + '/unfollow', method = 'GET')
-			button.botton_style(type = 'submit') Unfollow
+		if myPage == '0'
+			form.form-signin(action = '/users/' + uid + '/follow', method = 'GET')
+				button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Follow
+		else if myPage == '2'
+			form.form-signin(action = '/users/' + uid + '/unfollow', method = 'GET')
+				button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Unfollow
+		else
+			form.form-signin(action = 'photos/new', method = 'GET')
+				button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Upload
 
-	- var photos_array = JSON.parse(images);
-	//- console.log(images)
-	- for(var i = 0; i < photos_array.length ; i ++)
-		- {
-			//- console.log(photos_array.length);
-			- for(var item in photos_array[i])
-				- if(item === 'path')
-					- {
-						//- console.log(photos_array[i][item], photos_array[i][item].length);
-						- var address = photos_array[i][item].slice(1,photos_array[i][item].length-1);
-						div.image
-							img(src = address)
-					- }
-				- else if(item === 'name')
-					- {
-						//- console.log(photos_array[i][item]);
-						div.desc
-							p #{photos_array[i][item]}
-					- }
-				- else if(item === 'time')
-					- {
-						div.desc
-							p #{photos_array[i][item]}
-					- }
-		- }
+		div.row
+			- var photos_array = JSON.parse(images);
+			//- console.log(images)
+			- for(var i = 0; i < photos_array.length ; i ++)
+				- {
+					//- console.log(photos_array.length);
+					- for(var item in photos_array[i])
+						- if(item === 'path')
+							- {
+								//- console.log(photos_array[i][item], photos_array[i][item].length);
+								- var address = photos_array[i][item].slice(1,photos_array[i][item].length-1);
+								div.col-xs-4
+									div.thumbnail
+										img(src = address)
+							- }
+						- else if(item === 'name')
+							- {
+								//- console.log(photos_array[i][item]);
+										div.caption
+											h3 #{photos_array[i][item]}
+							- }
+						- else if(item === 'time')
+							- {
+											p #{photos_array[i][item]}
+							- }
+				- }
 
-	form.form_style(action = '/feed', method = 'GET')
-		div.control_group
-			div.controls
-				button.botton_style(type = 'submit', name = 'page', value = preq) More
+		form.form-signin(action = '/feed', method = 'GET')
+			button(type = 'submit', name = 'page', value = preq, class = 'btn btn-lg btn-primary btn-block') More
 
-	form.form_style(action = '/logout', method = 'GET')
-		div.control.group
-			div.controls
-				button.button_style(type = 'submit', value = 'Log out') Log out
-
-	p do you want to 
-		a(href='photos/new') <strong>upload photos</strong>
+		form.form-signin(action = '/logout', method = 'GET')
+			button(type = 'submit', value = 'Log out', class = 'btn btn-lg btn-primary btn-block') Log out
