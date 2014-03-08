@@ -6,11 +6,21 @@ block title
 
 block content
 
-	P
-		strong Please upload your picture :
+	if(error != '')
+		p !{error}
 
-	form.form_style(action = '/photos/create', method = 'POST', enctype = 'multipart/form-data')
-		div.control_group
-			div.controls
-				input(type = 'file', name = 'image', value = 'Choose file')
-				button.botton_style(type = 'submit') Upload photos
+	div.container
+		form.form-signin(action = '/photos/create', method = 'POST', enctype = 'multipart/form-data')
+
+			h2.form-signin-heading Please upload
+
+			input(type = 'file', name = 'image', value = 'Choose file', class = 'btn btn-lg btn-primary btn-block', style = 'opacity:1')
+
+			button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Upload photos
+			
+			br
+			br
+			br
+
+		form.form-signin(action = '/feed', method = 'GET')
+			button(class = 'btn btn-lg btn-primary btn-block', type = 'submit') Back
