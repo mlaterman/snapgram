@@ -46,13 +46,13 @@ block content
 							- {
 								- time = photos_array[i][item];
 							- }
-						div.col-xs-4
-							div.thumbnail
-								img(src = address)
-								div.caption
-									h3 #{name}
-									p #{time}
-									//a(href = name_share, class = "btn btn-default", role = "button") Share
+					div.col-xs-4
+						div.thumbnail
+							img(src = address)
+							div.caption
+								h3 #{name}
+								p #{time}
+								//a(href = name_share, class = "btn btn-default", role = "button") Share
 				- }
 
 		form.form-signin(action = '/feed', method = 'GET')
