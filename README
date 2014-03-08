@@ -1,23 +1,20 @@
 SENG 513 Team Project
+Team 10
 
 Extras:
-	Logout option added (GET /logout), redirects to login page after
+	Logout option added (get /logout), redirects to login page after
 		destroying session
 	serving request: get /favicon.ico
-
+	
 Unimplemented Features:
-	Sharing
+	share
 	
 Untested Features:
-	Bulk Uploads - users/streams(clear is tested)
-		password requirement ignored for simplicity
+	Bulk Uploads - users/streams(clear is tested), password requirement
+		ignored for simplicity
 		
-NOTE:
+Note:
 	web2.cpsc database failures were experianced earlier in testing day
-	
-TODO:
-	Deploy and test
-		Fix feed to use thumbnails - thumbnails should link to full images
 
 Packages:
 	express

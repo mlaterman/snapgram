@@ -248,20 +248,6 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-/*
- * Optional Share Spec
- *
-app.get('/photos/:id.:ext/share', function(req, res) {
-	var id = req.params.id;
-	
-	db.share(req.session.userid, id, function(err, val) {
-		if(err) {
-			
-		} else {
-			
-		}
-	});
-});*/
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
