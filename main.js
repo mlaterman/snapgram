@@ -190,21 +190,16 @@ app.post('/photos/create', function(req, res) {
 					var path = './photos/'+pid+ext[0];
 					var fStream = fs.createReadStream(uFile.path);
 					var oStream = fs.createWriteStream(path);
-					util.pump(fStream, oStream, function(ferr) {
-						if(ferr) { //error transerring from fStream to oStream
-							db.deletePhoto(req.session.userid, pid, function(e){});
-							fs.unlink(path, function(e){});
-							respond500('Filesystem Error Uploading Photo', res);
-						} else {
-							db.addPath(pid, path, function(val) {
-								if(val == 0) {//error updateing path on server
-									db.deletePhoto(req.session.userid, pid, function(e){});
-									fs.unlink(path, function(e){});
-								}
-							});
-							res.redirect('/feed');//file was uploaded
-							res.send();
-						}
+					fStream.pipe(oStream, {end : false});
+					fStream.on('end', function() {
+						db.addPath(pid, path, function(val) {
+							if(val == 0) {//error updateing path on server
+								db.deletePhoto(req.session.userid, pid, function(e){});
+								fs.unlink(path, function(e){});
+							}
+						});
+						res.redirect('/feed');//file was uploaded
+						res.send();
 					});
 				}
 			}

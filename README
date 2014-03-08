@@ -18,3 +18,10 @@ NOTE:
 TODO:
 	Deploy and test
 		Fix feed to use thumbnails - thumbnails should link to full images
+
+Packages:
+	express
+	jade
+	mysql
+	gm
+	
