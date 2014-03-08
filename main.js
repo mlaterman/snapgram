@@ -292,6 +292,7 @@ app.get('/feed', function(req, res) {
 app.get('/bulk/clear', function(req, res) {
 	db.deleteTables();
 	db.createTables();
+	res.send(200, "Tables cleared");
 });
 
 app.post('/bulk/users', function(req, res) {
@@ -311,6 +312,7 @@ app.post('/bulk/users', function(req, res) {
 			db.follow(id, fid, function(e) {});
 		});
 	});
+	res.send(200, "Users uploaded");
 });
 
 app.post('/bulk/streams', function(req, res) {
@@ -322,6 +324,7 @@ app.post('/bulk/streams', function(req, res) {
 		var ts = new Date(req.body[i].timestamp);
 		db._photoInsert(id, uid, ts, ts, path);
 	}
+	res.send(200, "Feeds Uploaded");
 });
 
 /*
