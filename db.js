@@ -479,18 +479,18 @@ function getUserName(uid, callback){
 //@param uid, a user's id
 //@param pid, a photo one wants to share
 //@return if succeed in sharing, return 1; if no such photo, return 0; 
-function sharePhoto(userID, photoID, callback) {
+/*function sharePhoto(userID, photoID, callback) {
     var connection = mysql.createConnection(db_config);
 
     var sql = ' INSERT INTO stream (uid, pid, source ) '+
 	      '    SELECT flwr_id FROM followship ' +
 	      '		WHERE flwe_id = ? '  +
 	      ' WHERE NOT EXISTS ( ' +
-	      '      stream.uid = followship.flwr_id AND stream.pid = ? ';
+	      '      SELECT pid FROM stream WHERE stream.uid = followship.flwr_id AND stream.pid = ? ';
 
     connection.end();
 }
-
+*/
 module.exports.createTables = createTables;
 module.exports.usr_is_exist = usr_is_exist;
 module.exports.addUser = addUser;
