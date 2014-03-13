@@ -12,7 +12,7 @@ var db_config = {
     password: db_password,
     database:'s513_yaozhao',
     multipleStatements:true,
-    connectionLimit:100,
+    connectionLimit:5,
 };
 var pool = mysql.createPool(db_config);
 
