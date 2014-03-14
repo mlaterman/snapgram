@@ -22,4 +22,6 @@ Packages:
 	jade
 	mysql
 	gm
-	
+Testing Packages:
+	mocha
+	expect.js

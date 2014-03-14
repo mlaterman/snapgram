@@ -1,12 +1,11 @@
 var express = require('express');
-var mysql = require('mysql');
 var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
 var db = require('./db');
-//var routes = require('./routes')
 
 var app = express();
+app.use(express.logger());
 app.use(express.cookieParser());
 app.use(express.session({
 	key : 'sid',
@@ -14,8 +13,8 @@ app.use(express.session({
 })); //use session or cookieSession?
 app.use(express.bodyParser());//bodyParser includes express.json
 app.set('view engine', 'jade');
-app.use(app.router)
-//app.engine('jade', require('jade').__express);
+app.use(app.router);
+
 /*
  * Session variables:
  * valid - end user is logged in
