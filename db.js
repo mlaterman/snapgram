@@ -1,7 +1,7 @@
 var mysql = require('mysql');
 var pc = require('./passwdCrypt');
 
-var db_host = 'localhost', //web2.cpsc.ucalgary.ca
+var db_host = 'web2.cpsc.ucalgary.ca', //web2.cpsc.ucalgary.ca
     db_user = 's513_yaozhao',
     db_password = '10125166';
     
@@ -215,7 +215,7 @@ function checkPassword(userName, password, callback){
                     callback(null, 0);
                 }
             }
-            connection.realese();
+            connection.release();
         });
     });
 }
@@ -252,9 +252,9 @@ function addPhoto(userID,ts,fname, callback){
                     callback(null,rows.insertId);
                     }
                 });
-            }
-            connection.releases();	
+            }	
         });
+		connection.release();
     });
 }
 //add a path to a record with specified photo id, if succeeds, return 1, otherwise, return 0
