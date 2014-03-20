@@ -5,7 +5,7 @@ var fs = require('fs');
 var db = require('./db');
 
 var app = express();
-app.use(express.logger());
+//app.use(express.logger());
 app.use(express.cookieParser());
 app.use(express.session({
 	key : 'sid',
@@ -283,7 +283,7 @@ app.post('/bulk/users', function(req, res) {
 		var id = req.body[i].id;
 		var name = req.body[i].name
 		var password = req.body[i].password;
-		db._userInsert(id,name,name,password);
+		db._userInsert(id,"bulk "+name,name,password);
 	}
 	users.forEach(function(user) {
 		var id = user.id;

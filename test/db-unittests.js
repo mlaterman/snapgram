@@ -1,5 +1,5 @@
 var db = require('./../db.js');
-var expect = require('expect');
+var expect = require('expect.js');
 
 var user1 = {
 	id : 1,
@@ -84,8 +84,10 @@ describe('database unit tests', function() {
 		//wrong types test
 		it('Wrong user & password: expects value of 0 returned', function(done) {
 			db.checkPassword("bananas", 1234, function(err, val) {
+				if(err)
+					expect.fail(err);
 				expect(val).to.equal(0);
-			}
+			});
 			done();
 		});
 	});
@@ -109,11 +111,6 @@ describe('database unit tests', function() {
 			});
 			fExists = true;
 			done();
-		});
-		//TODO: ensure test above is run before test below
-		before(function(done) {
-			if(fExists)
-				done();
 		});
 		
 		it('User followinng a user again: expects a zero as the realtionship exists already', function(done) {
