@@ -281,7 +281,7 @@ app.post('/bulk/users', function(req, res) {
 	for(var i = 0; i < num; i++) {
 		users.push(req.body[i]);
 		var id = req.body[i].id;
-		var name = req.body[i].name
+		var name = req.body[i].name;
 		var password = req.body[i].password;
 		db._userInsert(id,"bulk "+name,name,password);
 	}

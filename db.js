@@ -485,7 +485,7 @@ function _userInsert(uid, fullName, usrName, password) {
 	      ') LIMIT 1;';
     pool.getConnection(function (err, connection){
 		if(err) throw err;
-        connection.query(sql, [uid, fullName, usrName, password, usrName, uid], function (err){
+        connection.query(sql, [uid, fullName, usrName, pc.encrypt(password), usrName, uid], function (err){
         if(err)
             throw err;
         connection.release();
