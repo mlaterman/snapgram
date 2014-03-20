@@ -424,3 +424,4 @@ function _photosQueryDefault(rows) {
 
 db.createTables();//ensure there is a database
 app.listen(8500);//run the server
+module.exports = app;
