@@ -1,18 +1,14 @@
-var expect = require('expect.js');
-var http = require('http');
+var request = require('supertest');
+var should = require('should');
 
-var opts = {
-	host : 'node.cs.ucalgary.ca',
-	port : 8500,
-	method : '',
-	path : ''
-};
 var integrationUser = {
-	fname : 'integration user',
-	login : 'iuser',
+	fullname : 'integration user',
+	username : 'iuser',
 	password : 'iuser'
 };
+var cookie;
 
+request = request('node.cs.ucalgary.ca:8500');
 /*
  * A series of requests to test various components of the application;
  * Test one: make a request and check if there is a redirect to the login page
@@ -22,63 +18,34 @@ var integrationUser = {
  */ 
 describe('A check for redirection when not logged in and account creation page is served sucessfully', function() {
 	it('Expects to be redirected to /sessions/new', function(done) {
-		opts.path = '/';
-		opts.method = 'GET';
-		var req = http.request(opts);
-		req.on('response', function(res) {
-			req.on('data', function(chunk) {});
-			req.on('end', function() {
-				expect(res.statusCode).to.equal('302');
-				expect(res.headers).to.contain('/session/new');
-				done();
-			});
-		});
-		req.on('error', function(err) {
-			expect().fail("Error with http response");
-			done();
-		});
-		req.end();
+		request.get('/').expect(302, done());
 	});
 	it('Expects the sign up form to be returned', function(done) {
-		opts.path = '/users/new';
-		opts.method = 'GET';
-		var req = http.request(opts);
-		req.on('response', function(res) {
-			req.on('data', function(chunk) {});
-			req.on('end', function() {
-				expect(res.statusCode).to.equal('200');
-				expect(res.headers).to.contain('Sign Up');//TODO: better expect here
-				done();
-			});
-		});
-		req.on('error', function(err) {
-			expect().fail("Error with http response");
-			done();
-		});
-		req.end();
+		request.get('/users/new').expect(200, done());
 	});
 });
-/*
+
 describe('A test for account creation and proper response', function() {
 	it('Expects a cookie to be returned and a redirect to /feed', function(done) {
-		opts.path = '/users/create';
-		opts.method = 'POST';
-		var req = http.request(opts);
-		req.on('response', function(res) {
-			req.on('data', function(chunk) {});
-			req.on('end', function() {
-				expect(res.statusCode).to.equal('302');
-				expect(res.headers).to.contain('/feed');
-				expect(res).to.contain('sid'); //TODO: make sure this checks for the cookie
-				done();
-			});
-		});
-		req.on('error', function(err) {
-			expect().fail("Error with http response");
+		request.post('/users/create').send(integrationUser).expect('Location', '/feed').expect(302, function(err, res){
+			cookie = res.headers['set-cookie'];
 			done();
 		});
-		//TODO: write body here
-		req.end();
 	});
 });
-*/
+
+describe('Upload an image and view the feed afterwards', function() {
+	it('should be able to see an image in the feed', function(done) {
+		request.post('/photos/create').set('cookie', cookie).attach('image', './photos/test1.jpg')expect('Location', '/feed').expect(302, done());
+		request.get('/feed').set('cookie', cookie).expect(200, function(err, res) {
+			res.body.should.containEql('img');
+			done()
+		});
+	});
+});
+
+describe('logging out after test', function() {
+	it('should redirect on logout', function(done) {
+		requst.get('/logout').set('cookie', cookie).expect(302, done());
+	});
+});
