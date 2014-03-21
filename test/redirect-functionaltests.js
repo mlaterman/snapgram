@@ -1,12 +1,15 @@
-//<<<<<<< HEAD
+/*  Redirect Functional tests
+This test file calles some funcions in the db.js. Therefore make sure the test file is put into the test folder of snapgram.
+The server should run the node snapgram on port 8500.
+This program tests the following 4 conditions:
+1) Send the request to '/' with cookies: should be redirected to '/sessions/new'
+2) Send the request to '/' without cookies: should be redirected to '/feed'
+3) Send the request to '/feed' with cookies: should show the feed content
+4) Send the request to '/feed' without cookies: should be redirected to '/sessions/new'
+
+*/
+//********************************************************************
 var db = require('./../db.js');
-//var expect = require('expect');
-//var app = require('./../main.js');
-//var app = require('express');
-//=======
-//var db = require('./db.js');
-//var app = require('./main.js');
-//>>>>>>> 2989df1269508ca757c3cc05cbb39025833005fd
 var request = require('supertest');
 var should = require('should');
 
