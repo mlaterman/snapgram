@@ -20,7 +20,8 @@ var integrationUser = {
 	password : 'iuser'
 };
 var cookie;
-var image = './photos/test1.jpg';
+var image = '../photos/test1.jpg';
+var fname = 'test.jpg';
 request = request('node.cs.ucalgary.ca:8500');
 
 describe('A check for redirection when not logged in and account creation page is served sucessfully', function() {
@@ -43,12 +44,12 @@ describe('A test for account creation and proper response', function() {
 });
 
 describe('Upload an image and view the feed afterwards', function() {
-	it('should be able to upload an image an redirect to feed', function(done) {
-		request.post('/photos/create').set('cookie', cookie).attach('image', image).expect('Location', '/feed').expect(302, done());
+	before(function(done) {
+		request.post('/photos/create').set('cookie', cookie).attach('image', image, fname).expect(302, done());
 	});
 	it('should see an image in the feed', function(done) {
 		request.get('/feed').set('cookie', cookie).expect(200, function(err, res) {
-			res.body.should.containEql('img');
+			res.text.should.containEql('img');
 			done()
 		});
 	});
