@@ -505,7 +505,7 @@ function _photoInsert(fid, uid, ts, fname, path){
     
     pool.getConnection(function (err, connection){
 		if(err) throw err;
-        connection.query(sql, [fid, uid,ts, fname, path], function (err) {
+        connection.query(sql, [fid, uid,ts, fname, path, fid], function (err) {
         if(err) throw err;
         connection.release();
         });

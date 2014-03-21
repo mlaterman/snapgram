@@ -1,21 +1,28 @@
 var request = require('supertest');
 var should = require('should');
 
+/*
+ * A sample user session, a user gets redirected to the log in page,
+ * makes a new account, uploads an image and views it on the feed before
+ * logging out.
+ * 
+ * Test one: make a requests and check if there is a redirect to the
+ * 			 login page, request the sign up page
+ * test two: Create a new account, check that the response is a redirect
+ * 			 to feed and store the cookie
+ * test three: upload an image and see that it appears in feed
+ * test four: logout redirection
+ */ 
+ 
 var integrationUser = {
 	fullname : 'integration user',
 	username : 'iuser',
 	password : 'iuser'
 };
 var cookie;
-
+var image = './photos/test1.jpg';
 request = request('node.cs.ucalgary.ca:8500');
-/*
- * A series of requests to test various components of the application;
- * Test one: make a request and check if there is a redirect to the login page
- * test two: make a request to get the user sign up page, then create an account
- * 			 and see that there is a redirect to /feed
- * test three: upload an image and see that it appears in feed
- */ 
+
 describe('A check for redirection when not logged in and account creation page is served sucessfully', function() {
 	it('Expects to be redirected to /sessions/new', function(done) {
 		request.get('/').expect(302, done());
@@ -36,8 +43,10 @@ describe('A test for account creation and proper response', function() {
 });
 
 describe('Upload an image and view the feed afterwards', function() {
-	it('should be able to see an image in the feed', function(done) {
-		request.post('/photos/create').set('cookie', cookie).attach('image', './photos/test1.jpg').expect('Location', '/feed').expect(302, done());
+	it('should be able to upload an image an redirect to feed', function(done) {
+		request.post('/photos/create').set('cookie', cookie).attach('image', image).expect('Location', '/feed').expect(302, done());
+	});
+	it('should see an image in the feed', function(done) {
 		request.get('/feed').set('cookie', cookie).expect(200, function(err, res) {
 			res.body.should.containEql('img');
 			done()

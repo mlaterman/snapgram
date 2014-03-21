@@ -1,8 +1,8 @@
 var http = require('http');
 var str = JSON.stringify([
-{id:1, user_id:'1', path: './photos/1.png'},
-{id:2, user_id:'1', path: './photos/2.jpg'},
-{id:3, user_id:'2', path: './photos/1.png'}]);
+{id:1, user_id:1, path: './photos/1.png', timestamp:1395439597730},
+{id:2, user_id:1, path: './photos/2.jpg', timestamp:1395439597731},
+{id:3, user_id:2, path: './photos/1.png', timestamp:1395439597732}]);
 var opts = {
 	host: "node.cs.ucalgary.ca",
 	path: "/bulk/streams?password=thunder",
@@ -17,7 +17,7 @@ function sendReq() {
 	request.on('response', function(res) {
 		res.on('data', function(chunk) {});
 		res.on('end', function() {
-			console.log('Users Uploaded');
+			console.log('Streams Uploaded');
 		});
 	});
 	request.on('error', function(err) {console.log(err);});
