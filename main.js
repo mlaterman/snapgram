@@ -15,6 +15,8 @@ app.use(express.bodyParser());//bodyParser includes express.json
 app.set('view engine', 'jade');
 app.use(app.router);
 
+var passwrd = "thunder";//bulk password
+
 /*
  * Session variables:
  * valid - end user is logged in
@@ -270,41 +272,53 @@ app.get('/feed', function(req, res) {
  * Admin Requirement Functions
  */
 app.get('/bulk/clear', function(req, res) {
-	db.deleteTables();
-	db.createTables();
-	res.send(200, "Tables cleared");
+	if(req.query.password == passwrd) {
+		db.deleteTables();
+		db.createTables();
+		res.send(200, "Tables cleared");
+	} else {
+		respond400('Incorrect Password', res);
+	}
 });
 
 app.post('/bulk/users', function(req, res) {
-	var num = req.body.length;
-	var users = new Array()
-	for(var i = 0; i < num; i++) {
-		users.push(req.body[i]);
-		var id = req.body[i].id;
-		var name = req.body[i].name;
-		var password = req.body[i].password;
-		db._userInsert(id,"bulk "+name,name,password);
-	}
-	users.forEach(function(user) {
-		var id = user.id;
-		var flist = user.follows;
-		flist.forEach(function(fid) {
-			db.follow(id, fid, function(e) {});
+	if(req.query.password == passwrd) {
+		var num = req.body.length;
+		var users = new Array()
+		for(var i = 0; i < num; i++) {
+			users.push(req.body[i]);
+			var id = req.body[i].id;
+			var name = req.body[i].name;
+			var password = req.body[i].password;
+			db._userInsert(id,"bulk "+name,name,password);
+		}
+		users.forEach(function(user) {
+			var id = user.id;
+			var flist = user.follows;
+			flist.forEach(function(fid) {
+				db.follow(id, fid, function(e) {});
+			});
 		});
-	});
-	res.send(200, "Users uploaded");
+		res.send(200, "Users uploaded");
+	} else {
+		respond400('Incorrect Password', res);
+	}
 });
 
 app.post('/bulk/streams', function(req, res) {
-	var num = req.body.length;
-	for(var i = 0; i < num; i++) {
-		var id = req.body[i].id;
-		var uid = req.body[i].user_id;
-		var path = req.body[i].path;
-		var ts = new Date(req.body[i].timestamp);
-		db._photoInsert(id, uid, ts, ts, path);
+	if(req.query.password == passwrd) {
+		var num = req.body.length;
+		for(var i = 0; i < num; i++) {
+			var id = req.body[i].id;
+			var uid = req.body[i].user_id;
+			var path = req.body[i].path;
+			var ts = new Date(req.body[i].timestamp);
+			db._photoInsert(id, uid, ts, ts, path);
+		}
+		res.send(200, "Feeds Uploaded");
+	} else {
+		respond400('Incorrect Password', res);
 	}
-	res.send(200, "Feeds Uploaded");
 });
 
 /*

@@ -1,6 +1,9 @@
 SENG 513 Team Project
 Team 10
 
+Testing functionality added:
+	Mocha framework and should assertions used
+
 Extras:
 	Logout option added (get /logout), redirects to login page after
 		destroying session
@@ -10,11 +13,10 @@ Unimplemented Features:
 	share
 	
 Untested Features:
-	Bulk Uploads - users/streams(clear is tested), password requirement
-		ignored for simplicity
+	Bulk Upload - streams
+	
 		
 Note:
-	web2.cpsc database failures were experianced earlier in submission day
 	minor UI glitch on upload page
 
 Packages:
@@ -24,4 +26,5 @@ Packages:
 	gm
 Testing Packages:
 	mocha
-	expect.js
+	should
+	supertest
