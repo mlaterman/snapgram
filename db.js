@@ -498,14 +498,11 @@ function _photoInsert(fid, uid, ts, fname, path){
     //var connection = mysql.createConnection(db_config);
 
     var sql = 'INSERT INTO photos (pid, uid, timeStamp, name, path) ' +
-	      'SELECT * FROM ( SELECT ?, ?, ?, ?, ? ) AS tmp ' + 
-	      'WHERE NOT EXISTS ( ' +
-	      '	      SELECT pid FROM photos WHERE pid= ?'+
-	      ') LIMIT 1;';
+	      'VALUES ( ?, ?, ?, ?, ? );';
     
     pool.getConnection(function (err, connection){
 		if(err) throw err;
-        connection.query(sql, [fid, uid,ts, fname, path, fid], function (err) {
+        connection.query(sql, [fid, uid, ts, fname, path], function (err) {
         if(err) throw err;
         connection.release();
         });

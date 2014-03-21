@@ -313,7 +313,6 @@ app.post('/bulk/streams', function(req, res) {
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
-			console.log(i, id, uid, path, ts);
 			db._photoInsert(id, uid, ts, "bulk"+id, path);
 		}
 		res.send(200, "Feeds Uploaded");
