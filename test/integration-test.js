@@ -27,7 +27,8 @@ describe('A check for redirection when not logged in and account creation page i
 
 describe('A test for account creation and proper response', function() {
 	it('Expects a cookie to be returned and a redirect to /feed', function(done) {
-		request.post('/users/create').send(integrationUser).expect('Location', '/feed').expect(302, function(err, res){
+		request.post('/users/create').send(integrationUser).expect(302, function(err, res){
+			res.headers.location.should.equal('/feed');
 			cookie = res.headers['set-cookie'];
 			done();
 		});
@@ -36,7 +37,7 @@ describe('A test for account creation and proper response', function() {
 
 describe('Upload an image and view the feed afterwards', function() {
 	it('should be able to see an image in the feed', function(done) {
-		request.post('/photos/create').set('cookie', cookie).attach('image', './photos/test1.jpg')expect('Location', '/feed').expect(302, done());
+		request.post('/photos/create').set('cookie', cookie).attach('image', './photos/test1.jpg').expect('Location', '/feed').expect(302, done());
 		request.get('/feed').set('cookie', cookie).expect(200, function(err, res) {
 			res.body.should.containEql('img');
 			done()
@@ -46,6 +47,6 @@ describe('Upload an image and view the feed afterwards', function() {
 
 describe('logging out after test', function() {
 	it('should redirect on logout', function(done) {
-		requst.get('/logout').set('cookie', cookie).expect(302, done());
+		request.get('/logout').set('cookie', cookie).expect(302, done());
 	});
 });
