@@ -2,10 +2,14 @@ var express = require('express');
 var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
+var async = require('asynch');
 var db = require('./db');
 
 var app = express();
 app.use(express.logger());
+app.use('/photos', express.static('photos'));
+app.use('/js', express.static('public/js'));
+app.use('/stylesheets', express.static('public/stylesheets'));
 app.use(express.cookieParser());
 app.use(express.session({
 	key : 'sid',
@@ -40,7 +44,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 	var uname = req.body.username;
 	var pass = req.body.password;
 	var fname = req.body.fullname;
-	
+
 	db.addUser(uname, fname, pass, new Date(), function(err, data) {
 		if(err) {
 			respond500('Database Error', res);
@@ -65,7 +69,7 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 
 app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
-	
+
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
@@ -83,7 +87,7 @@ app.get('/users/:id/follow', function(req, res) {
 
 app.get('/users/:id/unfollow', function(req, res) {
 	var id = req.params.id;
-	
+
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
 		res.send();
@@ -101,17 +105,17 @@ app.get('/users/:id/unfollow', function(req, res) {
 
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
-	db.checkUserID(id, function(err, val) {
+	var page = req.query.page;
+	db.getUserName(id, function(err, uname) {
 		if(err) {
 			respond500('Database Failure', res);
-		} else if(!val) {
+		} else if(!uname) {
 			respond404('User id: '+id+' not found', res);
 		} else {
 			db.getMyFeed(id, function(ferr, rows) {
 				if(ferr) {
 					respond500('Database Failure', res);
 				} else {
-					var page = req.query.page;
 					var photos = photoQuery(page, rows);
 					db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
 						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
@@ -120,13 +124,7 @@ app.get('/users/:id', function(req, res) {
 							isFollowing = isFollowing ? '2' : '0';
 						}
 						page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1;
-						db.getUserName(id, function(uErr, uname) {
-							if(uErr) {
-								util.log('Unable to get username for id: '+id);
-								uname = "???"
-							}
-							res.render('feed', {title : uname+"'s Feed",username : uname, preq : page.toString(), myPage : isFollowing, uid : id, images : photos});
-						});
+						res.render('feed', {title : uname+"'s Feed",username : uname, preq : page.toString(), myPage : isFollowing, uid : id, images : photos});
 					});
 				}
 			});
@@ -145,7 +143,7 @@ app.get('/sessions/new', function(req, res) { //return login form
 app.post('/sessions/create', function(req, res) { //logs user in, redirects to /feed, if unsucessful, redirect to /sessions/new with error
 	var uname = req.body.username;
 	var pass = req.body.password;
-	
+
 	db.checkPassword(uname, pass, function(err, id) {
 			if(err) {
 				respond500('Database Failure', res);
@@ -193,11 +191,12 @@ app.post('/photos/create', function(req, res) {
 					var oStream = fs.createWriteStream(path);
 					fStream.pipe(oStream, {end : false});
 					fStream.on('end', function() {
-						db.addPath(pid, path, function(val) {
+						db.addPath(pid, './photos/thumbnail/'+pid+ext[0], function(val) {
 							if(val == 0) {//error updateing path on server
-								db.deletePhoto(req.session.userid, pid, function(e){});
+								db.deletePhoto(req.session.userid, pid, function(e) {});
 								fs.unlink(path, function(e){});
 							}
+							gm(path).resize(400).write('./photos/thumbnail/'+pid+ext[0], function(e) {});
 						});
 						res.redirect('/feed');//file was uploaded
 						res.send();
@@ -207,7 +206,7 @@ app.post('/photos/create', function(req, res) {
 		});
 	}
 });
-
+/*
 app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 	var id = req.params.id;
 	var ext = req.params.ext;
@@ -249,7 +248,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-
+*/
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
@@ -325,6 +324,7 @@ app.post('/bulk/streams', function(req, res) {
  * Register other requests
  * eg: css, scripts, ...
  */
+/*
  app.get('/js/bootstrap.js', function(req, res) {
 	 res.sendfile('./public/js/bootstrap.js');
 });
@@ -348,6 +348,7 @@ app.get('/stylesheets/texts.css', function(req, res) {
 app.get('/stylesheets/bootstrap.css', function(req, res) {
 	res.sendfile('./public/stylesheets/bootstrap.css');
 });
+*/
 
 app.get('/logout', function (req, res) {
 	req.session.destroy(function(err) { //to log out of cookie sessions
@@ -428,7 +429,7 @@ function photoQuery(page, rows) {
 			var end = start+30 < rows.length ? start+30 : rows.length;
 			return JSON.stringify(rows.slice(start, end));
 		}
-	}	
+	}
 }
 //By default get upto the first 30 objects
 function _photosQueryDefault(rows) {

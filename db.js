@@ -1,16 +1,11 @@
 var mysql = require('mysql');
 var pc = require('./passwdCrypt');
 
-var db_host = 'web2.cpsc.ucalgary.ca', //web2.cpsc.ucalgary.ca
-    db_user = 's513_yaozhao',
-    db_password = '10125166';
-    
-
 var db_config = {
-    host: db_host,
-    user: db_user,
-    password: db_password,
-    database:'s513_yaozhao',
+    host: 'web2.cpsc.ucalgary.ca',
+    user: 's513_mlaterma',
+    password: '10133713',
+    database:'s513_mlaterma',
     multipleStatements:true,
     connectionLimit:5,
 };
@@ -479,15 +474,12 @@ function _userInsert(uid, fullName, usrName, password) {
     //var connection = mysql.createConnection(db_config);
     
     var sql = 'INSERT INTO users (uid, fullname, usrname, passwd) '+
-	      'SELECT * FROM ( SELECT ?, ?, ?, ? ) AS tmp ' + 
-	      'WHERE NOT EXISTS ( ' +
-	      '	      SELECT usrname FROM users WHERE usrname = ? AND uid=? '+
-	      ') LIMIT 1;';
+	      'VALUES (?, ?, ?, ?);';
+	      
     pool.getConnection(function (err, connection){
 		if(err) throw err;
         connection.query(sql, [uid, fullName, usrName, pc.encrypt(password), usrName, uid], function (err){
-        if(err)
-            throw err;
+        if(err) throw err;
         connection.release();
         });
     });
@@ -510,7 +502,6 @@ function _photoInsert(fid, uid, ts, fname, path){
     });
 }
 function getUserName(uid, callback){
-    //var connection = mysql.createConnection(db_config);
     var sql = 'SELECT usrname FROM users WHERE uid = ?;';
 
     pool.getConnection(function (err, connection){
@@ -519,7 +510,7 @@ function getUserName(uid, callback){
         if (err)
             callback(err, null);
         else if(_isEmpty(rows))
-            callback('The id does not exist', null);
+            callback('The id does not exist', false);
             else
             callback(null, rows[0].usrname);
         connection.release();
@@ -527,8 +518,6 @@ function getUserName(uid, callback){
     });
 }
 function sharePhoto(userID, photoID, callback) {
-    //var connection = mysql.createConnection(db_config);
-
     var sql = ' create table temp as select flwr_id from followship where flwe_id = ? ; '+
 	      ' insert into stream (uid, pid, source)  ' +
 	      '    select temp.flwr_id, ?,  ?    from temp' +
