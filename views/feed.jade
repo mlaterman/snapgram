@@ -21,38 +21,25 @@ block content
 
 		div.row
 			- var photos_array = JSON.parse(images);
-			//- console.log(images)
-			- for(var i = 0; i < photos_array.length ; i ++)
-				- {
-					//- console.log(photos_array.length);
+			- for(var i = 0; i < photos_array.length ; i ++) {
 					- var address = '';
 					- var name = '';
 					- var time = '';
 					- var name_share = '';
 					- for(var item in photos_array[i])
-						- if(item === 'path')
-							- {
-								//- console.log(photos_array[i][item], photos_array[i][item].length);
-								- address = photos_array[i][item].slice(1,photos_array[i][item].length);
-								- name_share = '/share' + address;
-								- console.log(name_share);
-							- }
-						- else if(item === 'name')
-							- {
-								//- console.log(photos_array[i][item]);
-								- name = photos_array[i][item];
-							- }
-						- else if(item === 'time')
-							- {
-								- time = photos_array[i][item];
-							- }
+						- if(item === 'path') {
+							- address = photos_array[i][item].slice(8);
+						- } else if(item === 'name') {
+							- name = photos_array[i][item];
+						- } else if(item === 'time') {
+							- time = photos_array[i][item];
+						- }
 					div.col-xs-4
 						div.thumbnail
-							img(src = address)
+							img(src = "i/"+address)
 							div.caption
 								h3 #{name}
 								p #{time}
-								//a(href = name_share, class = "btn btn-default", role = "button") Share
 				- }
 
 		form.form-signin(action = '/feed', method = 'GET')

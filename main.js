@@ -2,14 +2,15 @@ var express = require('express');
 var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
-var async = require('asynch');
+var async = require('async');
 var db = require('./db');
 
 var app = express();
 app.use(express.logger());
-app.use('/photos', express.static('photos'));
-app.use('/js', express.static('public/js'));
-app.use('/stylesheets', express.static('public/stylesheets'));
+app.use('/i', express.static('photos/thumbnail')); //shortcut for serving feed thumbnails
+//app.use('/photos', express.static('photos')); //Use in 'real' situations where we have control over where images are uploaded
+//app.use('/js', express.static('public/js'));
+//app.use('/stylesheets', express.static('public/stylesheets'));
 app.use(express.cookieParser());
 app.use(express.session({
 	key : 'sid',
@@ -106,30 +107,40 @@ app.get('/users/:id/unfollow', function(req, res) {
 app.get('/users/:id', function(req, res) {
 	var id = req.params.id;
 	var page = req.query.page;
-	db.getUserName(id, function(err, uname) {
-		if(err) {
-			respond500('Database Failure', res);
-		} else if(!uname) {
-			respond404('User id: '+id+' not found', res);
-		} else {
-			db.getMyFeed(id, function(ferr, rows) {
-				if(ferr) {
-					respond500('Database Failure', res);
-				} else {
-					var photos = photoQuery(page, rows);
-					db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
-						if(folErr) {//do not show follow or unfollow buttons if there is an error checking follows status
-							isFollowing = "Unable to resolve follow status";
-						} else {//set isFollowing to proper string
-							isFollowing = isFollowing ? '2' : '0';
-						}
-						page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1;
-						res.render('feed', {title : uname+"'s Feed",username : uname, preq : page.toString(), myPage : isFollowing, uid : id, images : photos});
-					});
-				}
+	async.parallel([
+		function(callback) {
+			db.getUserName(id, function(err, uname) {
+				if(!uname)
+					callback("User Not Found", null);
+				else
+					callback(err, uname);
 			});
-		}
-	});
+		},
+		function(callback) {
+				db.getMyFeed(id, function(ferr, rows) {
+					var photos = photoQuery(page, rows);
+					callback(ferr, photos);
+				});
+		},
+		function(callback) {
+			db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
+				if(!folErr)
+					isFollowing = isFollowing ? '2' : '0';
+				callback(folErr, isFollowing);
+			});
+		}],
+		function(err, value) {
+			if(err) {
+				if(err == "User Not Found")
+					respond404(err, res);
+				else
+					respond500(err, res);
+			} else {
+				page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1
+				res.render('feed', {title : value[0]+"'s Feed",username : value[0], preq : page.toString(), myPage : value[2], uid : id, images : value[1]});
+			}
+		} 
+	);
 });
 
 app.get('/sessions/new', function(req, res) { //return login form
@@ -178,35 +189,52 @@ app.post('/photos/create', function(req, res) {
 	} else {
 		var uid = req.session.userid;
 		var uFile = req.files.image;
-		db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
-			if(err) {
-				respond500('Database Error Uploading Photo', res);
-			} else {//pid returned
-				var ext = (uFile.name).match(/\.[a-zA-Z]{1,4}$/);
-				if(ext == null) { //no extension
-					respond400('No extension found', res);
-				} else {
-					var path = './photos/'+pid+ext[0];
-					var fStream = fs.createReadStream(uFile.path);
-					var oStream = fs.createWriteStream(path);
-					fStream.pipe(oStream, {end : false});
-					fStream.on('end', function() {
-						db.addPath(pid, './photos/thumbnail/'+pid+ext[0], function(val) {
-							if(val == 0) {//error updateing path on server
-								db.deletePhoto(req.session.userid, pid, function(e) {});
-								fs.unlink(path, function(e){});
-							}
-							gm(path).resize(400).write('./photos/thumbnail/'+pid+ext[0], function(e) {});
-						});
-						res.redirect('/feed');//file was uploaded
-						res.send();
-					});
-				}
+		async.waterfall([
+			function(callback) {
+				db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
+					var ext = (uFile.name).match(/\.[a-zA-Z]{1,4}$/);
+					if(ext == null)
+						callback(400, null);
+					else
+						callback(err, pid, ext);
+				});
+			},
+			function(pid, ext, callback) {
+				var path = './photos/'+pid+ext[0];
+				var fStream = fs.createReadStream(uFile.path);
+				var oStream = fs.createWriteStream(path);
+				fStream.pipe(oStream, {end : false});
+				fStream.on('error', function(err) {
+					db.deletePhoto(req.session.userid, pid, function(e) {});
+					callback(err);
+				});
+				fStream.on('end', function() { callback(null, pid, ext, path)})
+			},
+			function(pid, ext, path, callback) {
+				db.addPath(pid, './photos/'+pid+ext[0], function(val) {
+					if(val == 0) {//error updateing path on server
+						db.deletePhoto(req.session.userid, pid, function(e) {});
+						fs.unlink(path, function(e){});
+						callback('Unable to update path');
+					} else {
+						gm(path).resize(400).write('./photos/thumbnail/'+pid+ext[0], function(e) {});
+						callback(null)
+					}
+				});
+			}
+		], function(err) {
+			if(err === 400)
+				respond400('Invalid File', res);
+			else if(err)
+				respond500('Server Error', res);
+			else {
+				res.redirect('/feed');//file was uploaded
+				res.send();
 			}
 		});
 	}
 });
-/*
+
 app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 	var id = req.params.id;
 	var ext = req.params.ext;
@@ -248,7 +276,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-*/
+
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
@@ -332,7 +360,7 @@ app.post('/bulk/streams', function(req, res) {
  app.get('/js/jquery-2.1.0.js', function(req, res) {
 	 res.sendfile('./public/js/jquery-2.1.0.js');
 });
- 
+*/
 app.get('/stylesheets/style.css', function(req, res) {
 	res.sendfile('./public/stylesheets/style.css');
 });
@@ -348,7 +376,6 @@ app.get('/stylesheets/texts.css', function(req, res) {
 app.get('/stylesheets/bootstrap.css', function(req, res) {
 	res.sendfile('./public/stylesheets/bootstrap.css');
 });
-*/
 
 app.get('/logout', function (req, res) {
 	req.session.destroy(function(err) { //to log out of cookie sessions

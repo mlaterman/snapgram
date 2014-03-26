@@ -13,10 +13,8 @@ block content
 		form.form-signin(action = '/sessions/create', method = 'post')
 			h2.form-signin-heading Please log in:
 
-			//label(for = 'input_UserName') Your Username
 			input.form-control(name = 'username', type = 'text', placeholder = 'input username', required autofocus)
 
-			//label.form-control(for = 'input_Password') Password
 			input.form-control(name = 'password', type = 'password', placeholder = 'input password', required)
 
 			button(type = 'submit', class = 'btn btn-lg btn-primary btn-block') Sign in
@@ -25,5 +23,3 @@ block content
 			button(class = 'btn btn-lg btn-primary btn-block', type = 'submit') Sign up
 
 			br
-			p.small
-				em Hint: try "Thor" and "123456"
