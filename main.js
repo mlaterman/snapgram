@@ -8,10 +8,6 @@ var db = require('./db');
 
 var app = express();
 app.use(express.logger());
-//app.use('/i', express.static('photos/thumbnail')); //shortcut for serving feed thumbnails
-//app.use('/photos', express.static('photos')); //Use in 'real' situations where we have control over where images are uploaded
-//app.use('/js', express.static('public/js'));
-//app.use('/stylesheets', express.static('public/stylesheets'));
 app.use(express.cookieParser());
 app.use(express.session({
 	key : 'sid',
@@ -119,10 +115,10 @@ app.get('/users/:id', function(req, res) {
 			});
 		},
 		function(callback) {
-				db.getMyFeed(id, function(ferr, rows) {
-					var photos = photoQuery(page, rows);
-					callback(ferr, photos);
-				});
+			db.getMyFeed(id, function(ferr, rows) {
+				var photos = photoQuery(page, rows);
+				callback(ferr, photos);
+			});
 		},
 		function(callback) {
 			db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
@@ -183,9 +179,7 @@ app.get('/photos/new', function(req, res) {
 		res.render('upload', {title : "Upload Photo"});
 	}
 });
-/*
- * TODO: Image caching holds old images on clearing the tables - why?
- */ 
+
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
@@ -228,17 +222,7 @@ app.post('/photos/create', function(req, res) {
 						callback(null);
 					}
 				});
-			}/*,
-			function(tPath, key, callback) {
-				fs.readFile(tPath, function(err, data) {
-					if(err) {
-						callback(null);
-					} else {
-						icache.set(key, data);
-						callback(null);
-					}
-				});
-			}*/
+			}
 		], function(err) {
 			if(err === 400)
 				respond400('Invalid File', res);
@@ -314,7 +298,10 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-
+/*
+ * New route that feed calls for serving thumbnails
+ * Tries to bypass a database hit
+ */ 
 app.get('/i/:id.:ext', function(req, res) {
 	var id = req.params.id;
 	var ext = req.params.ext;
