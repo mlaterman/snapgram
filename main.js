@@ -7,7 +7,7 @@ var LRU = require('lru-cache');
 var db = require('./db');
 
 var app = express();
-app.use(express.logger());
+//app.use(express.logger());
 //app.use('/i', express.static('photos/thumbnail')); //shortcut for serving feed thumbnails
 //app.use('/photos', express.static('photos')); //Use in 'real' situations where we have control over where images are uploaded
 //app.use('/js', express.static('public/js'));
@@ -183,7 +183,9 @@ app.get('/photos/new', function(req, res) {
 		res.render('upload', {title : "Upload Photo"});
 	}
 });
-
+/*
+ * TODO: Image caching holds old images on clearing the tables - why?
+ */ 
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
@@ -220,7 +222,17 @@ app.post('/photos/create', function(req, res) {
 						callback('Unable to update path');
 					} else {
 						gm(path).resize(400).write('./photos/thumbnail/'+pid+ext[0], function(e) {});
-						callback(null)
+						callback(null, './photos/thumbnail/'+pid+ext[0], pid+ext[0]);
+					}
+				});
+			},
+			function(tPath, key, callback) {
+				fs.readFile(tPath, function(err, data) {
+					if(err) {
+						callback(null);
+					} else {
+						icache.set(key, data);
+						callback(null);
 					}
 				});
 			}
@@ -240,22 +252,43 @@ app.post('/photos/create', function(req, res) {
 app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 	var id = req.params.id;
 	var ext = req.params.ext;
+	var img = icache.get(id+'.'+ext);
 	
-	db.getPath(id, function(err, path) {
-		if(err) {
-			respond404('Photo not found', res);
-		} else {
-			res.status(200);
-			res.set('Content-Type', 'image/'+ext);
-			gm(path).resize(400).stream(function (serr, stdout, stderr) {
-				if(serr) {
-					util.log('Resizing Error');
-				} else {
-					stdout.pipe(res);
-				}
-			});
-		}
-	});
+	if(img == null) {
+		console.log('cachemiss');
+		async.waterfall([
+			function(callback) {
+				db.getPath(id, function(err, path) {
+					if(err)
+						callback(404, null);
+					else
+						callback(null, path);
+				});
+			},
+			function(path, callback) {
+				gm(path).resize(400).toBuffer(function (err, buff) {
+					if(err)
+						callback(err, null);
+					else {
+						icache.set(id+'.'+ext, buff);
+						callback(null, buff);
+					}
+				});
+			}
+		], function(err, buff) {
+			if(err === 404)
+				respond404('File Not Found', res);
+			else if (err)
+				respond500('Server Error', res);
+			else {
+				res.type(ext);
+				res.send(buff);
+			}
+		});
+	} else {
+		res.type(ext);
+		res.send(img);
+	}
 });
 
 app.get('/photos/:id.:ext', function(req, res) {
@@ -267,7 +300,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 			respond404('Photo not found', res);
 		} else {
 			res.status(200);
-			res.set('Content-Type', 'image/'+ext);
+			res.type(ext);
 			gm(path).stream(function (serr, stdout, stderr) {
 				if(serr) {
 					util.log('Photo Streaming Error');
@@ -277,6 +310,30 @@ app.get('/photos/:id.:ext', function(req, res) {
 			});
 		}
 	});
+});
+
+app.get('/i/:id.:ext', function(req, res) {
+	var id = req.params.id;
+	var ext = req.params.ext;
+	var img = icache.get(id+'.'+ext);
+	
+	if(img == null) {
+		console.log('cachemiss');
+		fs.readFile('./photos/thumbnail/'+id+'.'+ext, function(err, data) {
+			if(!err) {
+				img = data;
+				icache.set(id+'.'+ext, data);
+				res.type(ext);
+				res.send(img);
+			} else {
+				console.log('i redirect');
+				res.redirect('/photos/thumbnail/'+id+'.'+ext);
+			}
+		});
+	} else {
+		res.type(ext);
+		res.send(img);
+	}
 });
 
 app.get('/feed', function(req, res) {
@@ -304,6 +361,9 @@ app.get('/bulk/clear', function(req, res) {
 	if(req.query.password == passwrd) {
 		db.deleteTables();
 		db.createTables();
+		icache.forEach(function(val, key, cache) {
+				icache.del(key);
+		});
 		icache.reset();
 		res.send(200, "Tables cleared");
 	} else {
@@ -458,16 +518,20 @@ function _photosQueryDefault(rows) {
 }
 
 function _cacheSetup() {
-		icache = LRU(15800*100);//thumbnail size * 100
+		icache = LRU(97792*100);//thumbnail size png 95.5kb * 100
 		scache = LRU(123000);//css files are close to this size
+		icache.forEach(function(val, key, cache) {
+				icache.del(key);
+		});
+		icache.reset();
 		fs.readFile('./public/stylesheets/style.css', function(err, data) {
-			scache.put('style.css', data);
+			scache.set('style.css', data);
 		});
 		fs.readFile('./public/stylesheets/image.css', function(err, data) {
-			scache.put('image.css', data);
+			scache.set('image.css', data);
 		});
 		fs.readFile('./public/stylesheets/bootstrap.css', function(err, data) {
-			scache.put('bootstrap.css', data);
+			scache.set('bootstrap.css', data);
 		});
 }
 
