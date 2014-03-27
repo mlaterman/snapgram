@@ -7,7 +7,7 @@ var LRU = require('lru-cache');
 var db = require('./db');
 
 var app = express();
-//app.use(express.logger());
+app.use(express.logger());
 //app.use('/i', express.static('photos/thumbnail')); //shortcut for serving feed thumbnails
 //app.use('/photos', express.static('photos')); //Use in 'real' situations where we have control over where images are uploaded
 //app.use('/js', express.static('public/js'));
@@ -199,8 +199,11 @@ app.post('/photos/create', function(req, res) {
 					var ext = (uFile.name).match(/\.[a-zA-Z]{1,4}$/);
 					if(ext == null)
 						callback(400, null);
-					else
+					else {
+						if(icache.has(pid+'.'+ext))
+							icache.del(pid+'.'+ext);
 						callback(err, pid, ext);
+					}
 				});
 			},
 			function(pid, ext, callback) {
@@ -222,10 +225,10 @@ app.post('/photos/create', function(req, res) {
 						callback('Unable to update path');
 					} else {
 						gm(path).resize(400).write('./photos/thumbnail/'+pid+ext[0], function(e) {});
-						callback(null, './photos/thumbnail/'+pid+ext[0], pid+ext[0]);
+						callback(null);
 					}
 				});
-			},
+			}/*,
 			function(tPath, key, callback) {
 				fs.readFile(tPath, function(err, data) {
 					if(err) {
@@ -235,7 +238,7 @@ app.post('/photos/create', function(req, res) {
 						callback(null);
 					}
 				});
-			}
+			}*/
 		], function(err) {
 			if(err === 400)
 				respond400('Invalid File', res);
@@ -321,10 +324,9 @@ app.get('/i/:id.:ext', function(req, res) {
 		console.log('cachemiss');
 		fs.readFile('./photos/thumbnail/'+id+'.'+ext, function(err, data) {
 			if(!err) {
-				img = data;
 				icache.set(id+'.'+ext, data);
 				res.type(ext);
-				res.send(img);
+				res.send(data);
 			} else {
 				console.log('i redirect');
 				res.redirect('/photos/thumbnail/'+id+'.'+ext);
@@ -361,7 +363,7 @@ app.get('/bulk/clear', function(req, res) {
 	if(req.query.password == passwrd) {
 		db.deleteTables();
 		db.createTables();
-		icache.forEach(function(val, key, cache) {
+		icache.keys().forEach(function(key) {
 				icache.del(key);
 		});
 		icache.reset();
@@ -518,9 +520,15 @@ function _photosQueryDefault(rows) {
 }
 
 function _cacheSetup() {
-		icache = LRU(97792*100);//thumbnail size png 95.5kb * 100
-		scache = LRU(123000);//css files are close to this size
-		icache.forEach(function(val, key, cache) {
+		icache = LRU({
+			max : 97792*100,
+			length : function(n){return n.length}
+		});//thumbnail size png 95.5kb * 100
+		scache = LRU({
+			max : 123000,
+			length : function(n){return n.length}
+		});//css files are close to this size
+		icache.keys().forEach(function(key) {
 				icache.del(key);
 		});
 		icache.reset();
