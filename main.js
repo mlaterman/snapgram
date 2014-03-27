@@ -3,11 +3,12 @@ var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
 var async = require('async');
+var LRU = require('lru-cache');
 var db = require('./db');
 
 var app = express();
 app.use(express.logger());
-app.use('/i', express.static('photos/thumbnail')); //shortcut for serving feed thumbnails
+//app.use('/i', express.static('photos/thumbnail')); //shortcut for serving feed thumbnails
 //app.use('/photos', express.static('photos')); //Use in 'real' situations where we have control over where images are uploaded
 //app.use('/js', express.static('public/js'));
 //app.use('/stylesheets', express.static('public/stylesheets'));
@@ -21,6 +22,7 @@ app.set('view engine', 'jade');
 app.use(app.router);
 
 var passwrd = "thunder";//bulk password
+var icache, scache;
 
 /*
  * Session variables:
@@ -302,6 +304,7 @@ app.get('/bulk/clear', function(req, res) {
 	if(req.query.password == passwrd) {
 		db.deleteTables();
 		db.createTables();
+		icache.reset();
 		res.send(200, "Tables cleared");
 	} else {
 		respond400('Incorrect Password', res);
@@ -352,29 +355,19 @@ app.post('/bulk/streams', function(req, res) {
  * Register other requests
  * eg: css, scripts, ...
  */
-/*
- app.get('/js/bootstrap.js', function(req, res) {
-	 res.sendfile('./public/js/bootstrap.js');
-});
-
- app.get('/js/jquery-2.1.0.js', function(req, res) {
-	 res.sendfile('./public/js/jquery-2.1.0.js');
-});
-*/
 app.get('/stylesheets/style.css', function(req, res) {
-	res.sendfile('./public/stylesheets/style.css');
+	res.type('css');
+	res.send(scache.get('style.css'));
 });
 
 app.get('/stylesheets/image.css', function(req, res) {
-	res.sendfile('./public/stylesheets/image.css');
-});
-
-app.get('/stylesheets/texts.css', function(req, res) {
-	res.sendfile('./public/stylesheets/texts.css');
+	res.type('css');
+	res.send(scache.get('image.css'));
 });
 
 app.get('/stylesheets/bootstrap.css', function(req, res) {
-	res.sendfile('./public/stylesheets/bootstrap.css');
+	res.type('css');
+	res.send(scache.get('bootstrap.css'));
 });
 
 app.get('/logout', function (req, res) {
@@ -464,6 +457,21 @@ function _photosQueryDefault(rows) {
 	return JSON.stringify(rows.slice(0, end));
 }
 
+function _cacheSetup() {
+		icache = LRU(15800*100);//thumbnail size * 100
+		scache = LRU(123000);//css files are close to this size
+		fs.readFile('./public/stylesheets/style.css', function(err, data) {
+			scache.put('style.css', data);
+		});
+		fs.readFile('./public/stylesheets/image.css', function(err, data) {
+			scache.put('image.css', data);
+		});
+		fs.readFile('./public/stylesheets/bootstrap.css', function(err, data) {
+			scache.put('bootstrap.css', data);
+		});
+}
+
 db.createTables();//ensure there is a database
+_cacheSetup();
 app.listen(8500);//run the server
 module.exports = app;
