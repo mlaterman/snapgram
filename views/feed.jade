@@ -33,9 +33,12 @@ block content
 						- if(item === 'path')
 							- {
 								//- console.log(photos_array[i][item], photos_array[i][item].length);
-								- address = photos_array[i][item].slice(1,photos_array[i][item].length);
-								- name_share = '/share' + address;
-								- console.log(name_share);
+								- if(photos_array[i][item].slice(0,1) === '/')
+									- address = photos_array[i][item].slice(0,photos_array[i][item].length);
+								- else if(photos_array[i][item].slice(0,1) === '.')
+									- address = photos_array[i][item].slice(1,photos_array[i][item].length);
+								//- name_share = '/share' + address;
+								- console.log(address);
 							- }
 						- else if(item === 'name')
 							- {

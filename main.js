@@ -250,6 +250,28 @@ app.get('/photos/:id.:ext', function(req, res) {
 	});
 });
 
+app.get('/home/courses/s513/w2014/pics/:id.:ext', function(req, res){
+	var id = req.params.id - 1;
+	var ext = req.params.ext;
+	
+	db.getPath(id, function(err, path) {
+		if(err) {
+			respond404('Photo not found', res);
+		} else {
+			res.status(200);
+			res.set('Content-Type', 'image/'+ext);
+			console.log(path);
+			gm(path).stream(function (serr, stdout, stderr) {
+				if(serr) {
+					util.log('Photo Streaming Error');
+				} else {
+					stdout.pipe(res);
+				}
+			});
+		}
+	});
+});
+
 app.get('/users/home/courses/s513/w2014/pics/:id.:ext', function(req, res){
 	var id = req.params.id - 1;
 	var ext = req.params.ext;

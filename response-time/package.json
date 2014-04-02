@@ -7,10 +7,9 @@
   },
   "dependencies": {
       "request": "*",
-	  "http": "*",
-	  "path": "*",
 	  "querystring": "*",
 	  "restler": "*",
-	  "util": "*"
+	  "util": "*",
+	  "async": "*"
   }
 }
