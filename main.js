@@ -1,3 +1,4 @@
+var cluster = require('cluster');
 var express = require('express');
 var util = require('util');
 var gm = require('gm');
@@ -5,11 +6,18 @@ var fs = require('fs');
 var async = require('async');
 var LRU = require('lru-cache');
 var db = require('./db');
+var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
 
 var app = express();
 app.use(express.logger());
 app.use(express.cookieParser());
-app.use(express.session({
+app.use(session({
+	store : new RedisStore({//TODO: test redis on localhost
+		host : 'localhost', //TODO: deploy on server, test redis
+		port :  8511,
+		db : 1
+	}),
 	key : 'sid',
 	secret : 's3cr3t'
 })); //use session or cookieSession?
@@ -26,6 +34,9 @@ var icache, scache;
  * lError - login/create account error occured
  * userid - user's id number
  * username - the user's login name
+ * 
+ * TODO: Redis Session, Cluster, forever
+ * kue (maybe)
  */
  
 /*
@@ -530,7 +541,18 @@ function _cacheSetup() {
 		});
 }
 
-db.createTables();//ensure there is a database
+//Use cluster to start many instances
+if(cluster.isMaster) {
+	db.createTables();//ensure there is a database
+	var cpuCount = require('os').cpus().length;
+	for(var i = 0; i < cpuCount; i += 1) {
+		cluster.fork();
+	}
+} else {
+	_cacheSetup();
+	app.listen(8501);//run the server
+}
+/*db.createTables();//ensure there is a database
 _cacheSetup();
-app.listen(8500);//run the server
-module.exports = app;
+app.listen(8501);//run the server
+*/
