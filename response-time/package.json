@@ -1,0 +1,16 @@
+{
+  "name": "response-time",
+  "version": "0.0.2",
+  "private": true,
+  "scripts": {
+    "start": "node bm.js"
+  },
+  "dependencies": {
+      "request": "*",
+	  "http": "*",
+	  "path": "*",
+	  "querystring": "*",
+	  "restler": "*",
+	  "util": "*"
+  }
+}
