@@ -7,7 +7,7 @@ var db_config = {
     password: '10133713',
     database:'s513_mlaterma',
     multipleStatements:true,
-    connectionLimit:5,
+    connectionLimit:2,
 };
 var pool = mysql.createPool(db_config);
 
