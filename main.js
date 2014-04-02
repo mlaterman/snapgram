@@ -13,8 +13,8 @@ var app = express();
 app.use(express.logger());
 app.use(express.cookieParser());
 app.use(session({
-	store : new RedisStore({//TODO: test redis on localhost
-		host : 'localhost', //TODO: deploy on server, test redis
+	store : new RedisStore({//TODO: deploy on server, test redis
+		host : 'localhost',
 		port :  8511,
 		db : 1
 	}),
@@ -35,7 +35,7 @@ var icache, scache;
  * userid - user's id number
  * username - the user's login name
  * 
- * TODO: Redis Session, Cluster, forever
+ * TODO: forever
  * kue (maybe)
  */
  
@@ -380,7 +380,7 @@ app.post('/bulk/users', function(req, res) {
 			var id = req.body[i].id;
 			var name = req.body[i].name;
 			var password = req.body[i].password;
-			db._userInsert(id,"bulk "+name,name,password);
+			db._userInsert(id,name,name,password);
 		}
 		users.forEach(function(user) {
 			var id = user.id;
@@ -552,7 +552,3 @@ if(cluster.isMaster) {
 	_cacheSetup();
 	app.listen(8501);//run the server
 }
-/*db.createTables();//ensure there is a database
-_cacheSetup();
-app.listen(8501);//run the server
-*/

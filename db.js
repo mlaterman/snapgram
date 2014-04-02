@@ -478,7 +478,7 @@ function _userInsert(uid, fullName, usrName, password) {
 	      
     pool.getConnection(function (err, connection){
 		if(err) throw err;
-        connection.query(sql, [uid, fullName, usrName, pc.encrypt(password), usrName, uid], function (err){
+        connection.query(sql, [uid, fullName, usrName, pc.encrypt(password)], function (err){
         if(err) throw err;
         connection.release();
         });
