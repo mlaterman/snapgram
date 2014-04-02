@@ -28,7 +28,8 @@ block content
 					- var name_share = '';
 					- for(var item in photos_array[i])
 						- if(item === 'path') {
-							- address = photos_array[i][item].slice(8);
+							- var index = photos_array[i][item].lastIndexOf("/");
+							- address = photos_array[i][item].slice(index);
 						- } else if(item === 'name') {
 							- name = photos_array[i][item];
 						- } else if(item === 'time') {

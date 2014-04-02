@@ -406,7 +406,7 @@ app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
 		var num = req.body.length;
 		for(var i = 0; i < num; i++) {
-			var id = req.body[i].id;
+			var id = req.body[i].id+1;  // add one to the id
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
@@ -559,3 +559,5 @@ if(cluster.isMaster) {
 	_cacheSetup();
 	app.listen(8501);//run the server
 }
+//ensure there is a database
+module.exports = app;
