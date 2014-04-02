@@ -13,20 +13,20 @@ var app = express();
 app.use(express.logger());
 app.use(express.cookieParser());
 app.use(session({
-	store : new RedisStore({//TODO: deploy on server, test redis
+	store : new RedisStore({
 		host : 'localhost',
 		port :  8511,
 		db : 1
 	}),
 	key : 'sid',
 	secret : 's3cr3t'
-})); //use session or cookieSession?
-app.use(express.bodyParser());//bodyParser includes express.json
+}));
+app.use(express.bodyParser());
 app.set('view engine', 'jade');
 app.use(app.router);
 
 var passwrd = "thunder";//bulk password
-var icache, scache;
+var icache, scache;//image and stylesheet cache
 
 /*
  * Session variables:
@@ -42,7 +42,7 @@ var icache, scache;
 /*
  * Requests needed for basic functionality
  */
-app.get('/users/new', function(req, res) { //return user signup form
+app.get('/users/new', function(req, res) {
 	if(req.session.lError == null) {
 		res.render('sign_up', {title : "User Sign-Up"});
 	} else {
@@ -50,7 +50,7 @@ app.get('/users/new', function(req, res) { //return user signup form
 	}
 });
 
-app.post('/users/create', function(req, res) { //create user from body info, logs in and redirects to feed
+app.post('/users/create', function(req, res) {
 	var uname = req.body.username;
 	var pass = req.body.password;
 	var fname = req.body.fullname;
@@ -85,8 +85,8 @@ app.get('/users/:id/follow', function(req, res) {
 		res.send();
 	} else {
 		db.follow(req.session.userid, id, function(err) {
-			if(err) { 
-				respond500('Failed to follow user id: '+id, res);//assume DB failure
+			if(err) { //assume DB failure
+				respond500('Failed to follow user id: '+id, res);
 			} else { // success
 				res.redirect('/users/'+id);
 				res.send();
@@ -152,7 +152,7 @@ app.get('/users/:id', function(req, res) {
 	);
 });
 
-app.get('/sessions/new', function(req, res) { //return login form
+app.get('/sessions/new', function(req, res) {
 	if(req.session.lError == null) {
 		res.render('login', {title : "Login Page"});
 	} else {
@@ -160,7 +160,7 @@ app.get('/sessions/new', function(req, res) { //return login form
 	}
 });
 
-app.post('/sessions/create', function(req, res) { //logs user in, redirects to /feed, if unsucessful, redirect to /sessions/new with error
+app.post('/sessions/create', function(req, res) {
 	var uname = req.body.username;
 	var pass = req.body.password;
 
@@ -224,7 +224,7 @@ app.post('/photos/create', function(req, res) {
 			},
 			function(pid, ext, path, callback) {
 				db.addPath(pid, './photos/'+pid+ext[0], function(val) {
-					if(val == 0) {//error updateing path on server
+					if(val == 0) {//error updating path on server
 						db.deletePhoto(req.session.userid, pid, function(e) {});
 						fs.unlink(path, function(e){});
 						callback('Unable to update path');
@@ -254,11 +254,11 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 	
 	if(img == null) {
 		fs.readFile('./photos/thumbnail/'+id+'.'+ext, function(err, data) {
-			if(!err) {
+			if(!err) {//if the file is in photos/thumbnail
 				icache.set(id+'.'+ext, data);
 				res.type(ext);
 				res.send(data);
-			} else {
+			} else { //otherwise ask the db for the path
 				async.waterfall([
 					function(callback) {
 						db.getPath(id, function(err, path) {
@@ -316,32 +316,6 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
-/*
- * New route that feed calls for serving thumbnails
- * Tries to bypass a database hit
- *
-app.get('/i/:id.:ext', function(req, res) {
-	var id = req.params.id;
-	var ext = req.params.ext;
-	var img = icache.get(id+'.'+ext);
-	
-	if(img == null) {
-		console.log('cachemiss');
-		fs.readFile('./photos/thumbnail/'+id+'.'+ext, function(err, data) {
-			if(!err) {
-				icache.set(id+'.'+ext, data);
-				res.type(ext);
-				res.send(data);
-			} else {
-				console.log('i redirect');
-				res.redirect('/photos/thumbnail/'+id+'.'+ext);
-			}
-		});
-	} else {
-		res.type(ext);
-		res.send(img);
-	}
-});*/
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
@@ -406,7 +380,7 @@ app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
 		var num = req.body.length;
 		for(var i = 0; i < num; i++) {
-			var id = req.body[i].id+1;  // add one to the id
+			var id = req.body[i].id+1;  // add one to the id to stop db issues
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
@@ -438,8 +412,8 @@ app.get('/stylesheets/bootstrap.css', function(req, res) {
 });
 
 app.get('/logout', function (req, res) {
-	req.session.destroy(function(err) { //to log out of cookie sessions
-		if(err) {						//set them to null
+	req.session.destroy(function(err) {
+		if(err) {
 			util.log('Error Destroying Session');
 		}
 	});
