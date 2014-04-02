@@ -273,9 +273,14 @@ app.get('/feed', function(req, res) {
  */
 app.get('/bulk/clear', function(req, res) {
 	if(req.query.password == passwrd) {
-		db.deleteTables();
-		db.createTables();
-		res.send(200, "Tables cleared");
+        console.log("Before clearing the tables");
+		db.deleteTables(function(){
+            console.log("After clearing the tables");
+            db.createTables(function(){
+                console.log("After creating new tables");
+                res.send(200, "Tables cleared");
+            });
+        });
 	} else {
 		respond400('Incorrect Password', res);
 	}
@@ -436,6 +441,7 @@ function _photosQueryDefault(rows) {
 	return JSON.stringify(rows.slice(0, end));
 }
 
-db.createTables();//ensure there is a database
-app.listen(8500);//run the server
+db.createTables(function(){
+    app.listen(8503);//run the server
+});//ensure there is a database
 module.exports = app;

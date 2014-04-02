@@ -1,5 +1,6 @@
 var mysql = require('mysql');
-var pc = require('./passwdCrypt');
+var pc = require('./passwdCrypt'), 
+    async = require('async');
 
 var db_host = 'web2.cpsc.ucalgary.ca', //web2.cpsc.ucalgary.ca
     db_user = 's513_yaozhao',
@@ -17,10 +18,11 @@ var db_config = {
 var pool = mysql.createPool(db_config);
 
 //function to create a database 'db' with four tables: users, photos, followship, stream; 
-var createTables = function () {
+var createTables = function (callback) {
+    console.log(callback);
 
         // create a table called 'users'  with fileds
-    var usr_fld = "( uid INT UNSIGNED NOT NULL AUTO_INCREMENT  primary key, \
+    var usr_fld = "( uid INT UNSIGNED NOT NULL  primary key AUTO_INCREMENT, \
 		    fullname char(20) not null, \
 		    usrname char(20) not null, \
 		    passwd char(40) not null, \
@@ -28,7 +30,7 @@ var createTables = function () {
     var crt_usr_tbl = 'CREATE TABLE IF NOT EXISTS users ' + usr_fld;
 
     // create a table called 'photos' to store all the uploaded photos and theirs infos
-    var photo_fld = "( pid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key," +
+    var photo_fld = "( pid INT UNSIGNED NOT NULL primary key," +
 		    " uid INT UNSIGNED, " +
 		    " timeStamp DATETIME, " +
 		    " name VARCHAR(30), " +
@@ -53,21 +55,37 @@ var createTables = function () {
 		      " FOREIGN KEY (pid) REFERENCES photos (pid) );";
     var crt_strm_tbl = 'CREATE TABLE IF NOT EXISTS stream ' + stream_fld;
 
-    var query = crt_usr_tbl + crt_photo_tbl + crt_flw_tbl + crt_strm_tbl;
+   // var query = crt_usr_tbl + crt_photo_tbl + crt_flw_tbl + crt_strm_tbl +"set session sql_mode='no_auto_value_on_zero'";
+   var commands = [];
+   commands.push("set session sql_mode='no_auto_value_on_zero';");
+   commands.push(crt_usr_tbl);
+   commands.push(crt_photo_tbl);
+   commands.push(crt_flw_tbl);
+   commands.push(crt_strm_tbl);
 
-	pool.getConnection(function (err, connection){
-		if(err) throw err;
-        connection.query(query, function(err){
-        if(err){
-            console.log('Error in creating tables');
-            throw err;
-        }
-        connection.release();
+function runcommands(commands, index ){
+    pool.getConnection(function (err, connection){
+
+        connection.query(commands[index], function(err){
+            if(err) {throw err;
+                console.log('Error in Creating user tables')}
+            connection.release();
+            console.log("Done ");
+            if(index+1 < commands.length)
+                runcommands(commands, index+1);
+            if(index+1== commands.length){
+                callback("done with creating tables");
+            }
         })
-    });
+    })
+};
+
+runcommands(commands, 0);
+
+
 } 
  // to delete a database 
-var deleteTables= function(){
+var deleteTables= function(callback){
     //var connection = mysql.createConnection(db_config);
     var sql = "SET FOREIGN_KEY_CHECKS = 0;" +
 	      "DROP table if exists users; " + 
@@ -82,6 +100,7 @@ var deleteTables= function(){
             console.log(err);
 
         connection.release();
+        callback();
        }); 
     });
 }
