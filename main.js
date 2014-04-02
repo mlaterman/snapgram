@@ -253,34 +253,41 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 	var img = icache.get(id+'.'+ext);
 	
 	if(img == null) {
-		console.log('cachemiss');
-		async.waterfall([
-			function(callback) {
-				db.getPath(id, function(err, path) {
-					if(err)
-						callback(404, null);
-					else
-						callback(null, path);
-				});
-			},
-			function(path, callback) {
-				gm(path).resize(400).toBuffer(function (err, buff) {
-					if(err)
-						callback(err, null);
+		fs.readFile('./photos/thumbnail/'+id+'.'+ext, function(err, data) {
+			if(!err) {
+				icache.set(id+'.'+ext, data);
+				res.type(ext);
+				res.send(data);
+			} else {
+				async.waterfall([
+					function(callback) {
+						db.getPath(id, function(err, path) {
+							if(err)
+								callback(404, null);
+							else
+								callback(null, path);
+						});
+					},
+					function(path, callback) {
+						gm(path).resize(400).toBuffer(function (err, buff) {
+							if(err)
+								callback(err, null);
+							else {
+								icache.set(id+'.'+ext, buff);
+								callback(null, buff);
+							}
+						});
+					}
+				], function(err, buff) {
+					if(err === 404)
+						respond404('File Not Found', res);
+					else if (err)
+						respond500('Server Error', res);
 					else {
-						icache.set(id+'.'+ext, buff);
-						callback(null, buff);
+						res.type(ext);
+						res.send(buff);
 					}
 				});
-			}
-		], function(err, buff) {
-			if(err === 404)
-				respond404('File Not Found', res);
-			else if (err)
-				respond500('Server Error', res);
-			else {
-				res.type(ext);
-				res.send(buff);
 			}
 		});
 	} else {
@@ -312,7 +319,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 /*
  * New route that feed calls for serving thumbnails
  * Tries to bypass a database hit
- */ 
+ *
 app.get('/i/:id.:ext', function(req, res) {
 	var id = req.params.id;
 	var ext = req.params.ext;
@@ -334,7 +341,7 @@ app.get('/i/:id.:ext', function(req, res) {
 		res.type(ext);
 		res.send(img);
 	}
-});
+});*/
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {

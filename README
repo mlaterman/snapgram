@@ -3,14 +3,8 @@ Team 10
 
 Optimizations:
 	For optimization efforts async package was used when viewing other
-		user's feeds as well as photo upload
+		user's feeds as well as photo upload and thumbnail retrieval
 	stylesheet and thumbnails are cached in lru-caches
-	
-	a new routing path (/i/) was added - feed by default makes requests
-		to this - if it fails to load the thumbnail from the cache and
-		can't find the photo in the default (/photos/thumbnail/)
-		directory it redirects to /photos/thumnails/ -- this will make a
-		db request for the path
 	
 	Redis is now needed as the backend session manager (intstalled on 
 		the local machine); Clustering added, the number of worker
