@@ -30,7 +30,7 @@ var createTables = function (callback) {
     var crt_usr_tbl = 'CREATE TABLE IF NOT EXISTS users ' + usr_fld;
 
     // create a table called 'photos' to store all the uploaded photos and theirs infos
-    var photo_fld = "( pid INT UNSIGNED NOT NULL primary key," +
+    var photo_fld = "( pid INT UNSIGNED NOT NULL AUTO_INCREMENT  primary key," +
 		    " uid INT UNSIGNED, " +
 		    " timeStamp DATETIME, " +
 		    " name VARCHAR(30), " +

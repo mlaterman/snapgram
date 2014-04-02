@@ -174,12 +174,17 @@ app.get('/photos/new', function(req, res) {
 });
 
 app.post('/photos/create', function(req, res) {
+    console.log("Post a create request");
+    console.log("HIIIIIIIIIIIIIIIIII");
+    console.log("HIHIHIHIHIHIIIHIHIHI");
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
+        console.log("not Vaild")
 		res.send();
 	} else {
 		var uid = req.session.userid;
 		var uFile = req.files.image;
+        console.log("you have a valid id");
 		db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
@@ -191,6 +196,8 @@ app.post('/photos/create', function(req, res) {
 					var path = './photos/'+pid+ext[0];
 					var fStream = fs.createReadStream(uFile.path);
 					var oStream = fs.createWriteStream(path);
+                    console.log("store path" + path);
+                    console.log("local Path " + uFile.path);
 					fStream.pipe(oStream, {end : false});
 					fStream.on('end', function() {
 						db.addPath(pid, path, function(val) {
@@ -199,8 +206,11 @@ app.post('/photos/create', function(req, res) {
 								fs.unlink(path, function(e){});
 							}
 						});
-						res.redirect('/feed');//file was uploaded
-						res.send();
+                        console.log("done with uploaded a file")
+					//	res.redirect('/feed');//file was uploaded
+                        res.status(200);
+                        res.set('Content-Type', 'text/html');
+						res.send("<html><head>Succeed in creating a photo</head><body><p>Succeed in uploading" + uFile.name + "</p></body></html>");
 					});
 				}
 			}
@@ -249,6 +259,29 @@ app.get('/photos/:id.:ext', function(req, res) {
 		}
 	});
 });
+
+app.get('/users/home/courses/s513/w2014/pics/:id.:ext', function(req, res) {
+	var id = req.params.id;
+	var ext = req.params.ext;
+	
+	db.getPath(id, function(err, path) {
+        console.log(path)
+		if(err) {
+			respond404('Photo not found', res);
+		} else {
+			res.status(200);
+			res.set('Content-Type', 'image/'+ext);
+			gm(path).stream(function (serr, stdout, stderr) {
+				if(serr) {
+					util.log('Photo Streaming Error');
+				} else {
+					stdout.pipe(res);
+				}
+			});
+		}
+	});
+});
+
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
@@ -314,7 +347,7 @@ app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
 		var num = req.body.length;
 		for(var i = 0; i < num; i++) {
-			var id = req.body[i].id;
+			var id = req.body[i].id+1;  // add one to the id
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
