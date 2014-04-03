@@ -385,13 +385,12 @@ app.post('/bulk/streams', function(req, res) {
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
 			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
-			var temp.path = path;
-				temp.name = id+"."+ext[0];
+			var temp = {fpath : path, name : id+"."+ext[0]};
 			thumbNails.push(temp);
 			db._photoInsert(id, uid, ts, "bulk"+id, path);
 		}
 		async.eachLimit(thumbNails, 3, function(thumbnail, callback) {
-			gm(thumnail.path).resize(400).write('./photos/thumbnail/'+thumbnail.name, function(err) {});
+			gm(thumnail.fpath).resize(400).write('./photos/thumbnail/'+thumbnail.name, function(err) {});
 			callback(null);
 		}, function (err) {
 			if(err)
