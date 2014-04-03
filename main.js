@@ -156,10 +156,7 @@ app.get('/sessions/new', function(req, res) {
 app.post('/sessions/create', function(req, res) {
 	var uname = req.body.username;
 	var pass = req.body.password;
-	var t1 = new Date();
-	console.log('BEFORE DB');
 	db.checkPassword(uname, pass, function(err, id) {
-		console.log("IN CB +"+ (new Date() - t1));
 			if(err) {
 				respond500('Database Failure', res);
 			} else if(id > 0) { //user found
@@ -167,9 +164,7 @@ app.post('/sessions/create', function(req, res) {
 				req.session.lError = null;
 				req.session.userid = id;
 				req.session.username = uname;
-				console.log('SESSION VARS SET');
 				res.redirect('/feed');
-				console.log('RES END +'+(new Date() - t1));
 			} else { //no user found
 				req.session.lError = true;
 				res.redirect('/sessions/new');
