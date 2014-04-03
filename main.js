@@ -162,8 +162,9 @@ app.get('/sessions/new', function(req, res) {
 app.post('/sessions/create', function(req, res) {
 	var uname = req.body.username;
 	var pass = req.body.password;
-
+	var t1 = new Date();
 	db.checkPassword(uname, pass, function(err, id) {
+		console.log(new Date() - t1);
 			if(err) {
 				respond500('Database Failure', res);
 			} else if(id > 0) { //user found
