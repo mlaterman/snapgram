@@ -64,11 +64,11 @@ app.post('/users/create', function(req, res) {
 				req.session.userid = data;
 				req.session.username = uname;
 				res.redirect('/feed');
-				res.send();
+				res.end();
 			} else if(data == 0) { //user already exists
 				req.session.lError = true;
 				res.redirect('/users/new');
-				res.send();
+				res.end();
 			} else { //some error occured
 				respond500('Unkown Error in account Creation', res);
 			}
