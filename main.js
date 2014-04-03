@@ -176,10 +176,12 @@ app.post('/sessions/create', function(req, res) {
 				console.log('SESSION VARS SET');
 				res.redirect('/feed');
 				res.send();
+				res.end();
 			} else { //no user found
 				req.session.lError = true;
 				res.redirect('/sessions/new');
 				res.send();
+				res.end();
 			}
 	});
 });
@@ -225,6 +227,7 @@ app.post('/photos/create', function(req, res) {
 				fStream.on('end', function() {
 					res.redirect('/feed');//file was uploaded
 					res.send();
+					res.end();
 					callback(null, pid, ext, path)});
 			},
 			function(pid, ext, path, callback) {
