@@ -36,7 +36,6 @@ var icache, scache;//image and stylesheet cache
  * username - the user's login name
  * 
  * TODO: forever
- * kue (maybe)
  */
  
 /*
@@ -384,7 +383,10 @@ app.post('/bulk/streams', function(req, res) {
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
+			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
+			console.log(ext);
 			db._photoInsert(id, uid, ts, "bulk"+id, path);
+			//gm(path).resize(400).write('./photos/thumbnail/'+id+ext[0], function(e) {});
 		}
 		res.send(200, "Feeds Uploaded");
 	} else {
@@ -422,7 +424,8 @@ app.get('/logout', function (req, res) {
 });
 
 app.get('/favicon.ico', function (req, res) {
-	res.sendfile('./photos/favicon.ico');
+	res.type('x-icon');
+	res.send(scache.get('favicon.ico'));
 })
 
 /*
@@ -504,7 +507,7 @@ function _cacheSetup() {
 			length : function(n){return n.length}
 		});//thumbnail size png 95.5kb * 100
 		scache = LRU({
-			max : 123000,
+			max : 123400,
 			length : function(n){return n.length}
 		});//css files are close to this size
 		icache.keys().forEach(function(key) {
@@ -519,6 +522,9 @@ function _cacheSetup() {
 		});
 		fs.readFile('./public/stylesheets/bootstrap.css', function(err, data) {
 			scache.set('bootstrap.css', data);
+		});
+		fs.readFile('./photos/favicon.ico', function(err, data) {
+			scache.set('favicon.ico', data);
 		});
 }
 
