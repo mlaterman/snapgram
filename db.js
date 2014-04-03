@@ -255,6 +255,7 @@ function addPhoto(userID,ts,fname, callback){
                     
                     callback(null,rows.insertId);
                     }*/
+                }
                 });
             }	
         });
