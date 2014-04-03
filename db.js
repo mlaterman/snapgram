@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var async = require('async');
 var pc = require('./passwdCrypt');
 
 var db_config = {
