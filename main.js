@@ -377,17 +377,18 @@ app.post('/bulk/users', function(req, res) {
 
 app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
-		var num = req.body.length;
-		for(var i = 0; i < num; i++) {
-			var id = req.body[i].id+1;  // add one to the id to stop db issues
-			var uid = req.body[i].user_id;
-			var path = req.body[i].path;
-			var ts = new Date(req.body[i].timestamp);
+		async.eachLimit(req.body, 3, function(body, callback) {
+			var id = body.id+1;  // add one to the id to stop db issues
+			var uid = body.user_id;
+			var path = body.path;
+			var ts = new Date(body.timestamp);
 			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
 			db._photoInsert(id, uid, ts, "bulk"+id, path);
 			gm(path).resize(400).write('./photos/thumbnail/'+id+ext[0], function(e) {});
-		}
-		res.send(200, "Feeds Uploaded");
+			callback();
+		}, function(err) {
+			res.send(200, "Feeds Uploaded");
+		});
 	} else {
 		respond400('Incorrect Password', res);
 	}
