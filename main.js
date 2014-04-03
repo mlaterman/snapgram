@@ -64,13 +64,9 @@ app.post('/users/create', function(req, res) {
 				req.session.userid = data;
 				req.session.username = uname;
 				res.redirect('/feed');
-				res.send(302);
-				res.end();
 			} else if(data == 0) { //user already exists
 				req.session.lError = true;
 				res.redirect('/users/new');
-				res.send(302);
-				res.end();
 			} else { //some error occured
 				respond500('Unkown Error in account Creation', res);
 			}
@@ -82,17 +78,13 @@ app.get('/users/:id/follow', function(req, res) {
 	var id = req.params.id;
 
 	if(req.session.valid == null) {
-		res.redirect('/sessions/new')
-		res.send(302);
-		res.end();
+		res.redirect('/sessions/new');
 	} else {
 		db.follow(req.session.userid, id, function(err) {
 			if(err) { //assume DB failure
 				respond500('Failed to follow user id: '+id, res);
 			} else { // success
 				res.redirect('/users/'+id);
-				res.send(302);
-				res.end();
 			}
 		});
 	}
@@ -103,16 +95,12 @@ app.get('/users/:id/unfollow', function(req, res) {
 
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
-		res.send(302);
-		res.end();
 	} else {
 		db.unFollow(req.session.userid, id, function(err) {
 				if(err) {
 					respond500('Failed to unfollow user id: '+id, res);
 				} else {
 					res.redirect('/users/'+id);
-					res.send(302);
-					res.end();
 				}
 		});
 	}
@@ -181,23 +169,17 @@ app.post('/sessions/create', function(req, res) {
 				req.session.username = uname;
 				console.log('SESSION VARS SET');
 				res.redirect('/feed');
-				res.send(302);
-				res.end();
 				console.log('RES END +'+(new Date() - t1));
 			} else { //no user found
 				req.session.lError = true;
 				res.redirect('/sessions/new');
-				res.send(302);
-				res.end();
 			}
 	});
 });
 
 app.get('/photos/new', function(req, res) {
 	if(req.session.valid == null) {
-		res.redirect('/sessions/new')
-		res.send(302);
-		res.end();
+		res.redirect('/sessions/new');
 	} else {
 		res.render('upload', {title : "Upload Photo"});
 	}
@@ -206,8 +188,6 @@ app.get('/photos/new', function(req, res) {
 app.post('/photos/create', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
-		res.send(302);
-		res.end();
 	} else {
 		var uid = req.session.userid;
 		var uFile = req.files.image;
@@ -235,8 +215,6 @@ app.post('/photos/create', function(req, res) {
 				});
 				fStream.on('end', function() {
 					res.redirect('/feed');//file was uploaded
-					res.send(302);
-					res.end();
 					callback(null, pid, ext, path)});
 			},
 			function(pid, ext, path, callback) {
@@ -270,7 +248,7 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 			if(!err) {//if the file is in photos/thumbnail
 				icache.set(id+'.'+ext, data);
 				res.type(ext);
-				res.send(data);
+				res.send(200, data);
 			} else { //otherwise ask the db for the path
 				async.waterfall([
 					function(callback) {
@@ -298,15 +276,14 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 						respond500('Server Error', res);
 					else {
 						res.type(ext);
-						res.status(200).send(buff);
-						res.end();
+						res.send(200, buff);
 					}
 				});
 			}
 		});
 	} else {
 		res.type(ext);
-		res.send(img);
+		res.send(200, img);
 	}
 });
 
@@ -334,8 +311,6 @@ app.get('/photos/:id.:ext', function(req, res) {
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
-		res.send(302);
-		res.end();
 	} else {
 		db.getFeed(req.session.userid, function(err, rows) {
 			if(err) {
@@ -362,7 +337,6 @@ app.get('/bulk/clear', function(req, res) {
 		});
 		icache.reset();
 		res.send(200, "Tables cleared");
-		res.end();
 	} else {
 		respond400('Incorrect Password', res);
 	}
@@ -387,7 +361,6 @@ app.post('/bulk/users', function(req, res) {
 			});
 		});
 		res.send(200, "Users uploaded");
-		res.end();
 	} else {
 		respond400('Incorrect Password', res);
 	}
@@ -407,7 +380,6 @@ app.post('/bulk/streams', function(req, res) {
 			if(err)
 				util.log("ERROR WITH BULK PHOTO UPLOAD");
 			res.send(200, "Feeds Uploaded");
-			res.end();
 		});
 	} else {
 		respond400('Incorrect Password', res);
@@ -421,19 +393,16 @@ app.post('/bulk/streams', function(req, res) {
 app.get('/stylesheets/style.css', function(req, res) {
 	res.type('css');
 	res.send(200, scache.get('style.css'));
-	res.end();
 });
 
 app.get('/stylesheets/image.css', function(req, res) {
 	res.type('css');
 	res.send(200, scache.get('image.css'));
-	res.end();
 });
 
 app.get('/stylesheets/bootstrap.css', function(req, res) {
 	res.type('css');
 	res.send(200, scache.get('bootstrap.css'));
-	res.end();
 });
 
 app.get('/logout', function (req, res) {
@@ -444,13 +413,11 @@ app.get('/logout', function (req, res) {
 	});
 	res.redirect('/sessions/new');
 	res.send(302);
-	res.end();
 });
 
 app.get('/favicon.ico', function (req, res) {
 	res.type('x-icon');
 	res.send(200, scache.get('favicon.ico'));
-	res.end();
 })
 
 /*
@@ -462,8 +429,6 @@ app.get('/', function(req, res) {
 	} else {
 		res.redirect('/feed');
 	}
-	res.send(302);
-	res.end();
 });
 
 app.get('*', function(req, res) { //unknown path
