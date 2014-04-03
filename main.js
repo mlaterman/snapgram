@@ -377,37 +377,13 @@ app.post('/bulk/users', function(req, res) {
 
 app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
-		var num = req.body.length;
-		var thumbNails = new Array();
-		for(var i = 0; i < num; i++) {
-			var id = req.body[i].id+1;  // add one to the id to stop db issues
-			var uid = req.body[i].user_id;
-			var path = req.body[i].path;
-			var ts = new Date(req.body[i].timestamp);
-			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
-			var temp = {fpath : path, name : id+"."+ext[0]};
-			thumbNails.push(temp);
-			db._photoInsert(id, uid, ts, "bulk"+id, path);
-		}
-		async.eachLimit(thumbNails, 3, function(thumbnail, callback) {
-			gm(thumnail.fpath).resize(400).write('./photos/thumbnail/'+thumbnail.name, function(err) {});
-			callback(null);
-		}, function (err) {
-			if(err)
-				util.log("ERROR WITH BULK PHOTO UPLOAD");
-			res.send(200, "Feeds Uploaded");
-		});
-	} else {
-		respond400('Incorrect Password', res);
-	}
-	/*if(req.query.password == passwrd) {
 		async.each(req.body, function(body, callback) {
 			var id = body.id+1;  // add one to the id to stop db issues
 			var uid = body.user_id;
 			var path = body.path;
 			var ts = new Date(body.timestamp);
 			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
-			db._photoInsert(id, uid, ts, "bulk"+id, path);
+			db._photoInsert(id, uid, ts, id, path);
 			callback();
 		}, function(err) {
 			if(err)
@@ -416,7 +392,7 @@ app.post('/bulk/streams', function(req, res) {
 		});
 	} else {
 		respond400('Incorrect Password', res);
-	}*/
+	}
 });
 
 /*
