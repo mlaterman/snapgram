@@ -239,13 +239,22 @@ function addPhoto(userID,ts,fname, callback){
                 if(err)
                     callback(err,null);
                 else{
-                    for (var fid in followers)
+					callback(null,rows.insertId);
+					async.each(followers, function (fid, cb) {
+						addToStream(fid, rows.insertId, function (err) {
+							cb(err);
+						});
+					}, function(err) {
+						if(err)
+							console.log(err);
+					});
+                    /*for (var fid in followers)
                         addToStream(followers[fid], rows.insertId, function(err){
                             if(err)  callback(err,null);
                         });
                     
                     callback(null,rows.insertId);
-                    }
+                    }*/
                 });
             }	
         });
