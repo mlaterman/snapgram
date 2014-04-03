@@ -384,9 +384,8 @@ app.post('/bulk/streams', function(req, res) {
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
 			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
-			console.log(ext);
 			db._photoInsert(id, uid, ts, "bulk"+id, path);
-			//gm(path).resize(400).write('./photos/thumbnail/'+id+ext[0], function(e) {});
+			gm(path).resize(400).write('./photos/thumbnail/'+id+ext[0], function(e) {});
 		}
 		res.send(200, "Feeds Uploaded");
 	} else {
