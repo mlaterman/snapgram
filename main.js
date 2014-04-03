@@ -219,7 +219,10 @@ app.post('/photos/create', function(req, res) {
 					db.deletePhoto(req.session.userid, pid, function(e) {});
 					callback(err);
 				});
-				fStream.on('end', function() { callback(null, pid, ext, path)})
+				fStream.on('end', function() {
+					res.redirect('/feed');//file was uploaded
+					res.send();
+					callback(null, pid, ext, path)});
 			},
 			function(pid, ext, path, callback) {
 				db.addPath(pid, './photos/'+pid+ext[0], function(val) {
@@ -238,10 +241,6 @@ app.post('/photos/create', function(req, res) {
 				respond400('Invalid File', res);
 			else if(err)
 				respond500('Server Error', res);
-			else {
-				res.redirect('/feed');//file was uploaded
-				res.send();
-			}
 		});
 	}
 });
