@@ -1,5 +1,8 @@
 SENG 513 Team Project
-Team 10
+Team 10 - Michel Laterman
+
+I have noticed that when using the test cript occasionally it takes a
+	few seconds for the login function to work. I do not know the cause.
 
 BUGS:
 	Occasion duplicate keys when using bulk stream upload does not occur
@@ -13,7 +16,8 @@ BUGS:
 
 Optimizations:
 	For optimization efforts async package was used when viewing other
-		user's feeds, bulk upload (stream), and thumbnail retrieval
+		user's feeds, bulk functions, thumbnail retrieval, and a bit in
+		db (addphoto).
 	stylesheet and thumbnails are cached in lru-caches
 	
 	Redis is now needed as the backend session manager (intstalled on 
