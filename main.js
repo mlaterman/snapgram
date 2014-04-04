@@ -94,7 +94,7 @@ app.get('/users/:id/unfollow', function(req, res) {
 	var id = req.params.id;
 
 	if(req.session.valid == null) {
-		res.redirect('/sessions/new')
+		res.redirect('/sessions/new');
 	} else {
 		db.unFollow(req.session.userid, id, function(err) {
 				if(err) {
@@ -141,7 +141,7 @@ app.get('/users/:id', function(req, res) {
 					respond500(err, res);
 				}
 			} else {
-				page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1
+				page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1;
 				res.render('feed', {title : value[0]+"'s Feed",username : value[0], preq : page.toString(), myPage : value[2], uid : id, images : value[1]});
 			}
 		} 
@@ -219,7 +219,7 @@ app.post('/photos/create', function(req, res) {
 				db.addPath(pid, './photos/'+pid+ext[0], function(val) {
 					if(val == 0) {//error updating path on server
 						db.deletePhoto(req.session.userid, pid, function(e) {});
-						fs.unlink(path, function(e){});
+						fs.unlink(path, function(e) {});
 						callback('Unable to update path');
 					} else {
 						gm(path).resize(400).write('./photos/thumbnail/'+pid+ext[0], function(e) {});
@@ -478,7 +478,7 @@ function respond500(message, res) {
 function photoQuery(page, rows) {
 	var photos;
 	if (page == null || page < 2 || isNaN(page)) {
-		return _photosQueryDefault(rows)
+		return _photosQueryDefault(rows);
 	} else {
 		var start = (page-1)*30;
 		if(start > rows.length) {
