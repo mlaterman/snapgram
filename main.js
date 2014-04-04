@@ -359,31 +359,16 @@ app.post('/bulk/users', function(req, res) {
 			var password = req.body[i].password;
 			db._userInsert(id,name,name,password);
 		}
-		async.each(users, function(user, callback) {
+		users.forEach(function(user) {
 			var id = user.id;
 			var flist = user.follows;
 			flist.forEach(function(fid) {
-				db.follow(id, fid, function(err) {
-					if(err) {
-						util.log("User: "+id+" could not follow "+fid);
-					}
+				db.follow(id, fid, function(e) {
+						util.log("Error with bulk-follows: "+e);
 				});
 			});
-			callback(null);
-		}, function(err) {
-			if(err) {
-				util.log("TROUBLE WITH BULK USER UPLOAD");
-			}
-			res.send(200, "Users uploaded");
 		});
-		/*users.forEach(function(user) {
-			var id = user.id;
-			var flist = user.follows;
-			flist.forEach(function(fid) {
-				db.follow(id, fid, function(e) {});
-			});
-		});
-		res.send(200, "Users uploaded");*/
+		res.send(200, "Users uploaded");
 	} else {
 		respond400('Incorrect Password', res);
 	}
@@ -391,20 +376,15 @@ app.post('/bulk/users', function(req, res) {
 
 app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
-		async.each(req.body, function(body, callback) {
-			var id = body.id+1;  // add one to the id to stop db issues
-			var uid = body.user_id;
-			var path = body.path;
-			var ts = new Date(body.timestamp);
-			var ext = path.match(/\.[a-zA-Z]{1,4}$/);
-			db._photoInsert(id, uid, ts, id, path);
-			callback();
-		}, function(err) {
-			if(err) {
-				util.log("ERROR WITH BULK PHOTO UPLOAD");
-			}
-			res.send(200, "Feeds Uploaded");
-		});
+		var num = req.body.length;
+		for(var i = 0; i < num; i++) {
+			var id = req.body[i].id+1;  // add one to the id
+			var uid = req.body[i].user_id;
+			var path = req.body[i].path;
+			var ts = new Date(req.body[i].timestamp);
+			db._photoInsert(id, uid, ts, "bulk"+id, path);
+		}
+		res.send(200, "Feeds Uploaded");
 	} else {
 		respond400('Incorrect Password', res);
 	}
