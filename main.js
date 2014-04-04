@@ -209,7 +209,6 @@ app.post('/photos/create', function(req, res) {
 					callback(err);
 				});
 				fStream.on('end', function() {
-					res.redirect('/feed');//file was uploaded
 					callback(null, pid, ext, path)});
 			},
 			function(pid, ext, path, callback) {
@@ -229,6 +228,8 @@ app.post('/photos/create', function(req, res) {
 				respond400('Invalid File', res);
 			else if(err)
 				respond500('Server Error', res);
+			else
+				res.redirect('/feed');//file was uploaded
 		});
 	}
 });

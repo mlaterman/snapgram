@@ -2,16 +2,17 @@ SENG 513 Team Project
 Team 10
 
 BUGS:
-	Occasion duplicate keys when using bulk stream upload
+	Occasion duplicate keys when using bulk stream upload does not occur
+		on every instance, number changes
 		cause: unknown
 		Status: one less image visible (not major)
-	Null path uploaded with some images pid 545-549 (last set of inserted images by script)
+	Null path uploaded with some images pid (only occurs to POST photos/create images)
 		cause: unkown
 		workaround: feed rendering ignores null paths
 
 Optimizations:
 	For optimization efforts async package was used when viewing other
-		user's feeds and thumbnail retrieval
+		user's feeds, bulk upload (stream), and thumbnail retrieval
 	stylesheet and thumbnails are cached in lru-caches
 	
 	Redis is now needed as the backend session manager (intstalled on 

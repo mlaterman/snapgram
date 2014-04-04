@@ -28,9 +28,9 @@ block content
 					- var name_share = '';
 					- for(var item in photos_array[i])
 						- if(item === 'path') {
-							- if (photos_array[i][item] == null)
+							- if (photos_array[i][item] == null) {
 							- 	console.log(photos_array[i]);
-							- else {
+							- } else {
 							- var index = photos_array[i][item].lastIndexOf("/");
 							- address = photos_array[i][item].slice(index);
 							- }
