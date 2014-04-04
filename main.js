@@ -337,6 +337,9 @@ app.get('/bulk/clear', function(req, res) {
 				icache.del(key);
 				callback(null);
 		}, function(err) {
+			if(err) {
+				util.log("TROUBLE CLEARING DB");
+			}
 			icache.reset();
 			res.send(200, "Tables cleared");
 		});
@@ -348,7 +351,7 @@ app.get('/bulk/clear', function(req, res) {
 app.post('/bulk/users', function(req, res) {
 	if(req.query.password == passwrd) {
 		var num = req.body.length;
-		var users = new Array()
+		var users = new Array();
 		for(var i = 0; i < num; i++) {
 			users.push(req.body[i]);
 			var id = req.body[i].id;
@@ -356,14 +359,31 @@ app.post('/bulk/users', function(req, res) {
 			var password = req.body[i].password;
 			db._userInsert(id,name,name,password);
 		}
-		users.forEach(function(user) {
+		async.each(users, function(user, callback) {
+			var id = user.id;
+			var flist = user.follows;
+			flist.forEach(function(fid) {
+				db.follow(id, fid, function(err) {
+					if(err) {
+						util.log("User: "+id+" could not follow "+fid);
+					}
+				});
+			});
+			callback(null);
+		}, function(err) {
+			if(err) {
+				util.log("TROUBLE WITH BULK USER UPLOAD");
+			}
+			res.send(200, "Users uploaded");
+		});
+		/*users.forEach(function(user) {
 			var id = user.id;
 			var flist = user.follows;
 			flist.forEach(function(fid) {
 				db.follow(id, fid, function(e) {});
 			});
 		});
-		res.send(200, "Users uploaded");
+		res.send(200, "Users uploaded");*/
 	} else {
 		respond400('Incorrect Password', res);
 	}

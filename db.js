@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var async = require('async');
 var pc = require('./passwdCrypt');
 
 var db_config = {
@@ -159,14 +160,20 @@ function addPhoto(userID,ts,fname, callback) {
 					if(err) {
 						callback(err,null);
 					} else {
-						for(var fid in followers) {
+						async.each(followers, function(fid, cb) {
 							addToStream(followers[fid], rows.insertId, function(err) {
 								if(err) {
-									throw err;
+									cb(err);
 								}
 							});
-						}						
-						callback(null,rows.insertId);
+							cb(null);
+						}, function(err) {
+							if(err) {
+								throw err;
+							} else {						
+								callback(null,rows.insertId);
+							}
+						})
                     }
                 });
             }	
