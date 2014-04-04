@@ -364,7 +364,9 @@ app.post('/bulk/users', function(req, res) {
 			var flist = user.follows;
 			flist.forEach(function(fid) {
 				db.follow(id, fid, function(e) {
-						util.log("Error with bulk-follows: "+e);
+						if(e) {
+							util.log("Error with bulk-follows: "+e);
+						}
 				});
 			});
 		});
