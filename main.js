@@ -3,6 +3,7 @@ var util = require('util');
 var gm = require('gm');
 var fs = require('fs');
 var db = require('./db');
+var path_module = require('path');
 
 var app = express();
 app.use(express.logger());
@@ -189,11 +190,18 @@ app.post('/photos/create', function(req, res) {
 					respond400('No extension found', res);
 				} else {
 					var path = './photos/'+pid+ext[0];
+					var path_thumb = './photos/thumbnail/' + pid + ext[0];
 					var fStream = fs.createReadStream(uFile.path);
-					var oStream = fs.createWriteStream(path);
-					fStream.pipe(oStream, {end : false});
-					fStream.on('end', function() {
-						db.addPath(pid, path, function(val) {
+					//fStream.pipe(oStream, {end : false});
+					//fStream.on('end', function() {
+					gm(fStream).resize(400).stream(function (serr, stdout, stderr) {
+						var oStream = fs.createWriteStream(path_thumb);
+						stdout.pipe(oStream);
+					});
+					gm(fStream).stream(function (serr, stdout, stderr) {
+						var oStream = fs.createWriteStream(path);
+						stdout.pipe(oStream);
+						db.addPath(pid, path_thumb, function(val) {
 							if(val == 0) {//error updateing path on server
 								db.deletePhoto(req.session.userid, pid, function(e){});
 								fs.unlink(path, function(e){});
@@ -218,9 +226,9 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 		} else {
 			res.status(200);
 			res.set('Content-Type', 'image/'+ext);
-			gm(path).resize(400).stream(function (serr, stdout, stderr) {
+			gm(req.url).stream(function (serr, stdout, stderr) {
 				if(serr) {
-					util.log('Resizing Error');
+					util.log('Thumbnail Error');
 				} else {
 					stdout.pipe(res);
 				}
@@ -272,27 +280,6 @@ app.get('/home/courses/s513/w2014/pics/:id.:ext', function(req, res){
 	});
 });
 
-app.get('/users/home/courses/s513/w2014/pics/:id.:ext', function(req, res){
-	var id = req.params.id - 1;
-	var ext = req.params.ext;
-	
-	db.getPath(id, function(err, path) {
-		if(err) {
-			respond404('Photo not found', res);
-		} else {
-			res.status(200);
-			res.set('Content-Type', 'image/'+ext);
-			console.log(path);
-			gm(path).stream(function (serr, stdout, stderr) {
-				if(serr) {
-					util.log('Photo Streaming Error');
-				} else {
-					stdout.pipe(res);
-				}
-			});
-		}
-	});
-});
 
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
@@ -358,11 +345,41 @@ app.post('/bulk/streams', function(req, res) {
 	if(req.query.password == passwrd) {
 		var num = req.body.length;
 		for(var i = 0; i < num; i++) {
+			//var uFile = req.files.image;
 			var id = req.body[i].id;
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
-			db._photoInsert(id, uid, ts, "bulk"+id, path);
+			//db._photoInsert(id, uid, ts, "bulk"+id, path);
+			filename = path_module.basename(path);
+			db.addPhoto(uid, ts, filename, function(err, pid) {
+				if(err) {
+					respond500('Database Error Uploading Photo', res);
+				} else {//pid returned
+					var ext = (filename).match(/\.[a-zA-Z]{1,4}$/);
+					if(ext == null) { //no extension
+						respond400('No extension found', res);
+					} else {
+						var path_new = './photos/'+pid+ext[0];
+						var path_thumb = './photos/thumbnail/' + pid + ext[0];
+						var fStream = fs.createReadStream(path);
+						var oStream = fs.createWriteStream(path_new);
+						fStream.pipe(oStream, {end : false});
+						fStream.on('end', function() {
+							db.addPath(pid, path_thumb, function(val) {
+								if(val == 0) {//error updateing path on server
+									db.deletePhoto(req.session.userid, pid, function(e){});
+									fs.unlink(path_thumb, function(e){});
+								}
+							});
+						});
+						gm(fStream).resize(400).stream(function (serr, stdout, stderr) {
+							var oStream = fs.createWriteStream(path_thumb);
+							stdout.pipe(oStream);
+						});
+					}
+				}
+			});
 		}
 		res.send(200, "Feeds Uploaded");
 	} else {

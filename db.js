@@ -19,7 +19,7 @@ var pool = mysql.createPool(db_config);
 
 //function to create a database 'db' with four tables: users, photos, followship, stream; 
 var createTables = function (callback) {
-    console.log(callback);
+    //console.log(callback);
 
         // create a table called 'users'  with fileds
     var usr_fld = "( uid INT UNSIGNED NOT NULL  primary key AUTO_INCREMENT, \
@@ -30,7 +30,7 @@ var createTables = function (callback) {
     var crt_usr_tbl = 'CREATE TABLE IF NOT EXISTS users ' + usr_fld;
 
     // create a table called 'photos' to store all the uploaded photos and theirs infos
-    var photo_fld = "( pid INT UNSIGNED NOT NULL primary key," +
+    var photo_fld = "( pid INT UNSIGNED NOT NULL AUTO_INCREMENT primary key," +
 		    " uid INT UNSIGNED, " +
 		    " timeStamp DATETIME, " +
 		    " name VARCHAR(30), " +
@@ -70,7 +70,7 @@ function runcommands(commands, index ){
             if(err) {throw err;
                 console.log('Error in Creating user tables')}
             connection.release();
-            console.log("Done ");
+            //console.log("Done ");
             if(index+1 < commands.length)
                 runcommands(commands, index+1);
             if(index+1== commands.length){

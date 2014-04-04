@@ -44,7 +44,8 @@ if (process.argv.length < 3) {
 }
 var port = process.argv[2];
 var pass = process.argv.length > 3 ? process.argv[3] : false;
-var host = 'node.cs.ucalgary.ca';
+//var host = 'node.cs.ucalgary.ca';
+var host = 'localhost';
 var baseUrl = 'http://' + host + ':' + port + '/';
 var commands = [];
 var stats = [];
