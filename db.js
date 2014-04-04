@@ -498,13 +498,10 @@ function _userInsert(uid, fullName, usrName, password) {
     //var connection = mysql.createConnection(db_config);
     
     var sql = 'INSERT INTO users (uid, fullname, usrname, passwd) '+
-	      'SELECT * FROM ( SELECT ?, ?, ?, ? ) AS tmp ' + 
-	      'WHERE NOT EXISTS ( ' +
-	      '	      SELECT usrname FROM users WHERE usrname = ? AND uid=? '+
-	      ') LIMIT 1;';
+	      'VALUES ( ?, ?, ?, ? );'; 
     pool.getConnection(function (err, connection){
 		if(err) throw err;
-        connection.query(sql, [uid, fullName, usrName, pc.encrypt(password), usrName, uid], function (err){
+        connection.query(sql, [uid, fullName, usrName, pc.encrypt(password)], function (err){
         if(err)
             throw err;
         connection.release();

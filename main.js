@@ -51,11 +51,9 @@ app.post('/users/create', function(req, res) { //create user from body info, log
 				req.session.userid = data;
 				req.session.username = uname;
 				res.redirect('/feed');
-				res.send();
 			} else if(data == 0) { //user already exists
 				req.session.lError = true;
 				res.redirect('/users/new');
-				res.send();
 			} else { //some error occured
 				respond500('Unkown Error in account Creation', res);
 			}
@@ -68,14 +66,12 @@ app.get('/users/:id/follow', function(req, res) {
 	
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
-		res.send();
 	} else {
 		db.follow(req.session.userid, id, function(err) {
 			if(err) { 
 				respond500('Failed to follow user id: '+id, res);//assume DB failure
 			} else { // success
 				res.redirect('/users/'+id);
-				res.send();
 			}
 		});
 	}
@@ -86,14 +82,12 @@ app.get('/users/:id/unfollow', function(req, res) {
 	
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
-		res.send();
 	} else {
 		db.unFollow(req.session.userid, id, function(err) {
 				if(err) {
 					respond500('Failed to unfollow user id: '+id, res);
 				} else {
 					res.redirect('/users/'+id);
-					res.send();
 				}
 		});
 	}
@@ -155,11 +149,9 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 				req.session.userid = id;
 				req.session.username = uname;
 				res.redirect('/feed');
-				res.send();
 			} else { //no user found
 				req.session.lError = true;
 				res.redirect('/sessions/new');
-				res.send();
 			}
 	});
 });
@@ -167,24 +159,17 @@ app.post('/sessions/create', function(req, res) { //logs user in, redirects to /
 app.get('/photos/new', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new')
-		res.send();
 	} else {
 		res.render('upload', {title : "Upload Photo"});
 	}
 });
 
 app.post('/photos/create', function(req, res) {
-    console.log("Post a create request");
-    console.log("HIIIIIIIIIIIIIIIIII");
-    console.log("HIHIHIHIHIHIIIHIHIHI");
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
-        console.log("not Vaild")
-		res.send();
 	} else {
 		var uid = req.session.userid;
 		var uFile = req.files.image;
-        console.log("you have a valid id");
 		db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
 			if(err) {
 				respond500('Database Error Uploading Photo', res);
@@ -196,8 +181,6 @@ app.post('/photos/create', function(req, res) {
 					var path = './photos/'+pid+ext[0];
 					var fStream = fs.createReadStream(uFile.path);
 					var oStream = fs.createWriteStream(path);
-                    console.log("store path" + path);
-                    console.log("local Path " + uFile.path);
 					fStream.pipe(oStream, {end : false});
 					fStream.on('end', function() {
 						db.addPath(pid, path, function(val) {
@@ -206,11 +189,7 @@ app.post('/photos/create', function(req, res) {
 								fs.unlink(path, function(e){});
 							}
 						});
-                        console.log("done with uploaded a file")
-					//	res.redirect('/feed');//file was uploaded
-                        res.status(200);
-                        res.set('Content-Type', 'text/html');
-						res.send("<html><head>Succeed in creating a photo</head><body><p>Succeed in uploading" + uFile.name + "</p></body></html>");
+						res.redirect('/feed');//file was uploaded
 					});
 				}
 			}
@@ -260,33 +239,9 @@ app.get('/photos/:id.:ext', function(req, res) {
 	});
 });
 
-app.get('/users/home/courses/s513/w2014/pics/:id.:ext', function(req, res) {
-	var id = req.params.id;
-	var ext = req.params.ext;
-	
-	db.getPath(id, function(err, path) {
-        console.log(path)
-		if(err) {
-			respond404('Photo not found', res);
-		} else {
-			res.status(200);
-			res.set('Content-Type', 'image/'+ext);
-			gm(path).stream(function (serr, stdout, stderr) {
-				if(serr) {
-					util.log('Photo Streaming Error');
-				} else {
-					stdout.pipe(res);
-				}
-			});
-		}
-	});
-});
-
-
 app.get('/feed', function(req, res) {
 	if(req.session.valid == null) {
 		res.redirect('/sessions/new');
-		res.send();
 	} else {
 		db.getFeed(req.session.userid, function(err, rows) {
 			if(err) {
@@ -394,7 +349,6 @@ app.get('/logout', function (req, res) {
 		}
 	});
 	res.redirect('/sessions/new');
-	res.send();
 });
 
 app.get('/favicon.ico', function (req, res) {
@@ -410,7 +364,6 @@ app.get('/', function(req, res) {
 	} else {
 		res.redirect('/feed');
 	}
-	res.send();
 });
 
 app.get('*', function(req, res) { //unknown path
