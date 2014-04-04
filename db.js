@@ -141,45 +141,68 @@ function checkPassword(userName, password, callback) {
 // @param callback: callback function, with two parameters, f(err, pid), 1st is err message and 2nd is photo id.
 function addPhoto(userID,ts,fname, callback) {
     var sql = 'INSERT INTO photos (uid, timestamp, name) VALUES (?,?,?)';
-    pool.getConnection(function(err, connection) {
-		if(err) {
-			throw err;
-		}
-        connection.query(sql, [userID, ts, fname], function(err, rows) {
-            if(err) {
-                callback(err,null);
-            } else {
-                //insert the photo to its own strem 
-                addToStream(userID, rows.insertId, function(err) {
+	async.waterfall([
+		function(callb) {
+			pool.getConnection(function(err, connection) {
+				if(err) {
+					callb(err, null);
+				} else {
+					callb(null, connection);
+				}
+			});
+		},
+		function(conn, callb) {
+			conn.query(sql, [userID, ts, fname], function(err, rows) {
+				if(err) {
+					callb(err, conn, null);
+				} else {
+					callb(null, conn, rows);
+				}
+			});
+		},
+		function(conn, rows, callb) {
+			addToStream(userID, rows.insertID, function(err) {
+				if(err) {
+					callb(err, conn, null);
+				}
+			});
+			callb(null, conn, rows);
+		},
+		function(conn, rows, callb) {
+			_getFollower(userID, function(err, followers) {
+				if(err) {
+					callb(err, conn, null);
+				} else {
+					callb(null, conn, followers, rows);
+				}
+			});
+		},
+		function(conn, followers, rows, callb) {
+			async.each(followers, function(fid, cb) {
+				addToStream(followers[fid], rows.insertId, function(err) {
 					if(err) {
-						callback(err,null);
+						cb(err);
 					}
-                });
-                //insert the photo to its followers' stream
-                _getFollower(userID, function(err,followers) {
-					if(err) {
-						callback(err,null);
-					} else {
-						async.each(followers, function(fid, cb) {
-							addToStream(followers[fid], rows.insertId, function(err) {
-								if(err) {
-									cb(err);
-								}
-							});
-							cb(null);
-						}, function(err) {
-							if(err) {
-								throw err;
-							} else {						
-								callback(null,rows.insertId);
-							}
-						})
-                    }
-                });
-            }	
-        });
-		connection.release();
-    });
+				});
+				cb(null);
+			}, function(err) {
+				if(err) {
+					callb(err, conn, null);
+				} else {
+					call(null, conn, rows.insertId);
+				}
+			}); 
+		}
+	], function(err, conn, insertID) {
+		if (!conn) {
+			conn.release();
+		}
+		if(err) {
+			callback(err, null);
+		} else {
+			callback(null, insertID);
+		}
+	});
 }
 //add a path to a record with specified photo id, if succeeds, return 1, otherwise, return 0
 function addPath(pid, path, callback) {

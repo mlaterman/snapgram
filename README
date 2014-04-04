@@ -4,10 +4,12 @@ Team 10
 BUGS:
 	Occasion duplicate keys when using bulk stream upload does not occur
 		on every instance, number changes
-		cause: unknown
+		cause: ?
 			Does not cause server to break so it is being ignored
 			(fixed?)
-	Occasional socked dropping on login (fixed?)
+	Occasional socked hangup on login  - no such table users
+		cause : ?
+		(fixed?)
 
 Optimizations:
 	For optimization efforts async package was used when viewing other
