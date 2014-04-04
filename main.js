@@ -25,7 +25,7 @@ app.use(express.bodyParser());
 app.set('view engine', 'jade');
 app.use(app.router);
 
-var passwrd = "thunder";//bulk password
+const passwrd = "thunder";//bulk password
 var icache, scache;//image and stylesheet cache
 
 /*
@@ -112,10 +112,11 @@ app.get('/users/:id', function(req, res) {
 	async.parallel([
 		function(callback) {
 			db.getUserName(id, function(err, uname) {
-				if(!uname)
+				if(!uname) {
 					callback("User Not Found", null);
-				else
+				} else {
 					callback(err, uname);
+				}
 			});
 		},
 		function(callback) {
@@ -126,17 +127,19 @@ app.get('/users/:id', function(req, res) {
 		},
 		function(callback) {
 			db.checkFollow(req.session.userid, id, function(folErr, isFollowing) {
-				if(!folErr)
+				if(!folErr) {
 					isFollowing = isFollowing ? '2' : '0';
+				}
 				callback(folErr, isFollowing);
 			});
 		}],
 		function(err, value) {
 			if(err) {
-				if(err == "User Not Found")
+				if(err == "User Not Found") {
 					respond404(err, res);
-				else
+				} else {
 					respond500(err, res);
+				}
 			} else {
 				page = (page == null || page < 2 || isNaN(page)) ? 2 : parseInt(page, 10) + 1
 				res.render('feed', {title : value[0]+"'s Feed",username : value[0], preq : page.toString(), myPage : value[2], uid : id, images : value[1]});
@@ -190,11 +193,12 @@ app.post('/photos/create', function(req, res) {
 			function(callback) {
 				db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
 					var ext = (uFile.name).match(/\.[a-zA-Z]{1,4}$/);
-					if(ext == null)
+					if(ext == null) {
 						callback(400, null);
-					else {
-						if(icache.has(pid+'.'+ext))
+					} else {
+						if(icache.has(pid+'.'+ext)) {
 							icache.del(pid+'.'+ext);
+						}
 						callback(err, pid, ext);
 					}
 				});
@@ -224,12 +228,13 @@ app.post('/photos/create', function(req, res) {
 				});
 			}
 		], function(err) {
-			if(err === 400)
+			if(err === 400) {
 				respond400('Invalid File', res);
-			else if(err)
+			} else if(err) {
 				respond500('Server Error', res);
-			else
+			} else {
 				res.redirect('/feed');//file was uploaded
+			}
 		});
 	}
 });
@@ -249,28 +254,29 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 				async.waterfall([
 					function(callback) {
 						db.getPath(id, function(err, path) {
-							if(err)
+							if(err) {
 								callback(404, null);
-							else
+							} else {
 								callback(null, path);
+							}
 						});
 					},
 					function(path, callback) {
 						gm(path).resize(400).toBuffer(function (err, buff) {
-							if(err)
+							if(err) {
 								callback(err, null);
-							else {
+							} else {
 								icache.set(id+'.'+ext, buff);
 								callback(null, buff);
 							}
 						});
 					}
 				], function(err, buff) {
-					if(err === 404)
+					if(err === 404) {
 						respond404('File Not Found', res);
-					else if (err)
+					} else if(err) {
 						respond500('Server Error', res);
-					else {
+					} else {
 						res.type(ext);
 						res.send(200, buff);
 					}
@@ -286,15 +292,14 @@ app.get('/photos/thumbnail/:id.:ext', function(req, res) {
 app.get('/photos/:id.:ext', function(req, res) {
 	var id = req.params.id;
 	var ext = req.params.ext;
-	
 	db.getPath(id, function(err, path) {
 		if(err) {
 			respond404('Photo not found', res);
 		} else {
 			res.status(200);
 			res.type(ext);
-			gm(path).stream(function (serr, stdout, stderr) {
-				if(serr) {
+			gm(path).stream(function (err, stdout, stderr) {
+				if(err) {
 					util.log('Photo Streaming Error');
 				} else {
 					stdout.pipe(res);
@@ -328,11 +333,13 @@ app.get('/bulk/clear', function(req, res) {
 	if(req.query.password == passwrd) {
 		db.deleteTables();
 		db.createTables();
-		icache.keys().forEach(function(key) {
+		async.each(icache.keys(), function(key, callback) {
 				icache.del(key);
+				callback(null);
+		}, function(err) {
+			icache.reset();
+			res.send(200, "Tables cleared");
 		});
-		icache.reset();
-		res.send(200, "Tables cleared");
 	} else {
 		respond400('Incorrect Password', res);
 	}
@@ -373,8 +380,9 @@ app.post('/bulk/streams', function(req, res) {
 			db._photoInsert(id, uid, ts, id, path);
 			callback();
 		}, function(err) {
-			if(err)
+			if(err) {
 				util.log("ERROR WITH BULK PHOTO UPLOAD");
+			}
 			res.send(200, "Feeds Uploaded");
 		});
 	} else {
@@ -408,7 +416,6 @@ app.get('/logout', function (req, res) {
 		}
 	});
 	res.redirect('/sessions/new');
-	res.send(302);
 });
 
 app.get('/favicon.ico', function (req, res) {

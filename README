@@ -5,10 +5,8 @@ BUGS:
 	Occasion duplicate keys when using bulk stream upload does not occur
 		on every instance, number changes
 		cause: unknown
-		Status: one less image visible (not major)
-	Null path uploaded with some images pid (only occurs to POST photos/create images)
-		cause: unkown
-		workaround: feed rendering ignores null paths
+			Does not cause server to break so it is being ignored
+			(fixed?)
 
 Optimizations:
 	For optimization efforts async package was used when viewing other
