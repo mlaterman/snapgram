@@ -32,10 +32,10 @@ block content
 					- for(var item in photos_array[i])
 						- if(item === 'path')
 							- {
-								//- console.log(photos_array[i][item], photos_array[i][item].length);
-								- address = photos_array[i][item].slice(1,photos_array[i][item].length);
-								- name_share = '/share' + address;
-								- console.log(name_share);
+								- var index = photos_array[i][item].lastIndexOf('/');
+								- address = '/photos/thumbnail'+photos_array[i][item].slice(index);
+								//- name_share = '/share' + address;
+								//- console.log(name_share);
 							- }
 						- else if(item === 'name')
 							- {
