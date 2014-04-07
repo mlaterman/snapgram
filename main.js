@@ -10,7 +10,7 @@ var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 
 var app = express();
-app.use(express.logger());
+//app.use(express.logger());
 app.use(express.cookieParser());
 app.use(session({
 	store : new RedisStore({
@@ -193,13 +193,16 @@ app.post('/photos/create', function(req, res) {
 			function(callback) {
 				db.addPhoto(uid, new Date(), uFile.name, function(err, pid) {
 					var ext = (uFile.name).match(/\.[a-zA-Z]{1,4}$/);
+					if(err) {
+						callback(err);
+					}
 					if(ext == null) {
 						callback(400, null);
 					} else {
 						if(icache.has(pid+'.'+ext)) {
 							icache.del(pid+'.'+ext);
 						}
-						callback(err, pid, ext);
+						callback(null, pid, ext);
 					}
 				});
 			},
@@ -230,7 +233,7 @@ app.post('/photos/create', function(req, res) {
 		], function(err) {
 			if(err === 400) {
 				respond400('Invalid File', res);
-			} else if(err) {
+			} else if(err != null) {
 				respond500('Server Error', res);
 			} else {
 				res.redirect('/feed');//file was uploaded
@@ -300,7 +303,7 @@ app.get('/photos/:id.:ext', function(req, res) {
 			res.type(ext);
 			gm(path).stream(function (err, stdout, stderr) {
 				if(err) {
-					util.log('Photo Streaming Error');
+				//	util.log('Photo Streaming Error');
 				} else {
 					stdout.pipe(res);
 				}
@@ -331,14 +334,14 @@ app.get('/feed', function(req, res) {
  */
 app.get('/bulk/clear', function(req, res) {
 	if(req.query.password == passwrd) {
-		db.deleteTables();
-		db.createTables();
+		db.deleteTables(function() {/*util.log('Tables Deleted');*/});
+		db.createTables(function() {/*util.log('Tables Created');*/});
 		async.each(icache.keys(), function(key, callback) {
 				icache.del(key);
 				callback(null);
 		}, function(err) {
 			if(err) {
-				util.log("TROUBLE CLEARING DB");
+			//	util.log("TROUBLE CLEARING DB");
 			}
 			icache.reset();
 			res.send(200, "Tables cleared");
@@ -365,7 +368,7 @@ app.post('/bulk/users', function(req, res) {
 			flist.forEach(function(fid) {
 				db.follow(id, fid, function(e) {
 						if(e) {
-							util.log("Error with bulk-follows: "+e);
+						//	util.log("Error with bulk-follows: "+e);
 						}
 				});
 			});
@@ -384,7 +387,11 @@ app.post('/bulk/streams', function(req, res) {
 			var uid = req.body[i].user_id;
 			var path = req.body[i].path;
 			var ts = new Date(req.body[i].timestamp);
-			db._photoInsert(id, uid, ts, "bulk"+id, path);
+			db._photoInsert(id, uid, ts, "bulk"+id, path, function(err) {
+				if(err) {
+				//	util.log("error inserting photo "+id);
+				}
+			});
 		}
 		res.send(200, "Feeds Uploaded");
 	} else {
@@ -414,7 +421,7 @@ app.get('/stylesheets/bootstrap.css', function(req, res) {
 app.get('/logout', function (req, res) {
 	req.session.destroy(function(err) {
 		if(err) {
-			util.log('Error Destroying Session');
+		//	util.log('Error Destroying Session');
 		}
 	});
 	res.redirect('/sessions/new');
@@ -444,7 +451,7 @@ app.get('*', function(req, res) { //unknown path
  * Helper Functions Below
  */
 function respond400(message, res) {
-	util.log(message);
+	//util.log(message);
 	res.render(400, {
 		status : 400,
 		error : message,
@@ -452,7 +459,7 @@ function respond400(message, res) {
 	});
 }
 function respond404(message, res) {
-	util.log(message);
+	//util.log(message);
 	res.render(404, {
 			status : 404,
 			error : message,
@@ -460,7 +467,7 @@ function respond404(message, res) {
 	});
 }
 function respond500(message, res) {
-	util.log(message);
+	//util.log(message);
 	res.render(500, {
 		status : 500,
 		error : message,
@@ -526,7 +533,7 @@ function _cacheSetup() {
 
 //Use cluster to start many instances
 if(cluster.isMaster) {
-	db.createTables();//ensure there is a database
+	db.createTables(function() {/*util.log('Tables Created');*/});//ensure there is a database
 	var cpuCount = require('os').cpus().length;
 	for(var i = 0; i < cpuCount; i += 1) {
 		cluster.fork();

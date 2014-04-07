@@ -13,7 +13,7 @@ var db_config = {
 var pool = mysql.createPool(db_config);
 
 //function to create a database 'db' with four tables: users, photos, followship, stream; 
-var createTables = function() {
+var createTables = function(callback) {
         // create a table called 'users'  with fileds
     var usr_fld = "( uid INT UNSIGNED NOT NULL AUTO_INCREMENT  primary key, \
 		    fullname char(20) not null, \
@@ -53,15 +53,16 @@ var createTables = function() {
 		}
         connection.query(query, function(err) {
 			if(err) {
-				console.log('Error in creating tables');
+			//	console.log('Error in creating tables');
 				throw err;
 			}
 			connection.release();
+			callback();
         });
     });
 } 
  // to delete a database 
-var deleteTables = function() {
+var deleteTables = function(callback) {
     var sql = "SET FOREIGN_KEY_CHECKS = 0;" +
 	      "DROP table if exists users; " + 
 	      "drop table if exists photos; " +
@@ -74,9 +75,10 @@ var deleteTables = function() {
 		}
         connection.query(sql, function(err, results) {
 			if(err) {
-				console.log(err);
+			//	console.log(err);
 			}
 			connection.release();
+			callback();
 		}); 
 	});
 }
@@ -114,7 +116,7 @@ function checkPassword(userName, password, callback) {
     var sql = 'SELECT passwd,uid FROM users WHERE usrName = ?';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [userName], function(err, rows) {
             if(err) {
@@ -143,7 +145,7 @@ function addPhoto(userID,ts,fname, callback) {
     var sql = 'INSERT INTO photos (uid, timestamp, name) VALUES (?,?,?)';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [userID, ts, fname], function(err, rows) {
             if(err) {
@@ -169,7 +171,7 @@ function addPhoto(userID,ts,fname, callback) {
 							cb(null);
 						}, function(err) {
 							if(err) {
-								throw err;
+								callback(err, null);
 							} else {						
 								callback(null,rows.insertId);
 							}
@@ -186,7 +188,7 @@ function addPath(pid, path, callback) {
     var sql = 'UPDATE photos SET path = ? where pid = ?';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [path, pid], function(err, results) {
 			if(err) {
@@ -204,7 +206,7 @@ function deletePhoto(userID, pid, callback) {
 	      "delete from photos where pid = ? and uid =?;";
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [pid, pid, userID], function(err) {
 			if(err) {
@@ -222,7 +224,7 @@ function getPath(pid, callback) {
     var sql = 'SELECT path FROM photos WHERE pid = ?';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [pid], function(err, rows) {
             if(err) {
@@ -258,7 +260,7 @@ function follow(followerID, followeeID, callback) {
 	     ' ) LIMIT 1;';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [followerID, followeeID, followerID, followeeID], function(err, res) {
             if(err) {
@@ -301,7 +303,7 @@ function addToStream(userID,photoID, callback) {
     var sql = 'INSERT INTO stream (uid, pid) VALUES (?, ?)';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [userID, photoID], function(err, results) {
             if(err) {
@@ -341,7 +343,7 @@ function getFeed(userID, callback) {
 	' photos.pid = stream.pid and stream.uid =? ORDER BY photos.pid DESC';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [userID], function(err, rows) {
 			if(err) {
@@ -360,7 +362,7 @@ function getMyFeed(userID, callback){
     var sql = 'SELECT pid, name, path, timeStamp FROM photos where uid = ? ORDER BY pid DESC';
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err, null);
 		}
         connection.query(sql, [userID], function(err, rows) {
 			if(err) {
@@ -413,20 +415,23 @@ function _userInsert(uid, fullName, usrName, password) {
 }
 //funtion for testing
 //insert a photo to the database
-function _photoInsert(fid, uid, ts, fname, path) {
+function _photoInsert(fid, uid, ts, fname, path, callback) {
     var sql = 'INSERT INTO photos (pid, uid, timeStamp, name, path) ' +
 	      'VALUES ( ?, ?, ?, ?, ? );';
     
     pool.getConnection(function(err, connection) {
 		if(err) {
-			throw err;
+			callback(err);
 		}
+		else {
         connection.query(sql, [fid, uid, ts, fname, path], function(err) {
 			if(err) {
-				throw err;
+				callback(err);
 			}
+			callback(null);
 			connection.release();
         });
+	}
     });
 }
 
